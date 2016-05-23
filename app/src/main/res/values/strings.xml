@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Facciamo come...</string>
+    <string name="serverURL">http://www.facciamocome.org/generate</string>
+    <string name="action_about">Informazioni</string>
+    <string name="Autore">Gabriele Galluzzo</string>
+    <string name="descrizione">Facciamo come... è un\'interfaccia android al sito Facciamocome™ (http://www.facciamocome.org/).\nIl sito Facciamocome™ è un generatore random di supercazzole esterofile e piddine.\nL\'app non è affiliata a sito né l\'autore ha collegamenti con sito stesso.</string>
+    <string name="add_widget">Add widget</string>
+    <string name="help">Clicca il testo in alto oppure il bottone qui in basso per avere un\'altra chicca piddina o un luogo comune sull\'Italia e gli italiani.\nSe ti piace una frase, puoi anche condividerla.</string>
+    <string name="ShareMimeType">text/plain</string>
+    <string name="CondividiCon">Condividi con…</string>
+</resources>
