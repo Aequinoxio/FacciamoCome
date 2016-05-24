@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         int id = item.getItemId();
 
         if (id == R.id.action_about) {
-            String s = getString(R.string.app_name) +"    - Ver. " + BuildConfig.VERSION_NAME ;
+            String s = getString(R.string.app_name) +" - Ver. " + BuildConfig.VERSION_NAME ;
             s+="\nby "+ getString(R.string.Autore);
             s+="\n\n"+getString(R.string.descrizione);
             new AlertDialog.Builder(MainActivity.this)
