@@ -27,6 +27,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
     // Id unico per l'intent. In caso contrario non viene passata alcuna stringa ma viene riutilizzato uno degli intent già esistenti
     private static int shareActivityRequestCode=789;
+    private static int broadCastRequestCode=790;
 
     public void onTaskComplete(String result){
         // Aggiorna la label del widget
@@ -49,12 +50,13 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         Intent intentSync = new Intent(context, FacciamoComeWidget.class);
         intentSync.setAction(AppWidgetManager.ACTION_APPWIDGET_UPDATE); //You need to specify the action for the intent. Right now that intent is doing nothing for there is no action to be broadcasted.
         //You need to specify a proper flag for the intent. Or else the intent will become deleted.
-        PendingIntent pendingSync = PendingIntent.getBroadcast(context,0, intentSync, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingSync = PendingIntent.getBroadcast(context,broadCastRequestCode, intentSync, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.txtPhraseWidget,pendingSync);
 
         // Creo un intent specifico per lanciare la ShareActivity (l'ho resa non visibile nel manifest) al clico sul pulsante nel widget
         Intent intentBtn = new Intent(context, ShareActivity.class);
-        intentBtn.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        // intentBtn.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intentBtn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intentBtn.putExtra(context.getString(R.string.IntentExtraPhrase),phrase); // Passo la frase alla nuova attività
         PendingIntent pendingIntentBtn = PendingIntent.getActivity(context, shareActivityRequestCode, intentBtn, PendingIntent.FLAG_UPDATE_CURRENT);
         // Get the layout for the App Widget and attach an on-click listener to the button
