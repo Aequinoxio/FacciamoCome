@@ -2,9 +2,12 @@ package com.example.utente.facciamocome;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +19,7 @@ import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -60,7 +64,12 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
 
     private void startServerRequest(){
         // Occorre passare il contesto della main activity e non dell'applicatio (getApplicationContext)
-        new GetAsyncServerResponse(MainActivity.this,this).execute();
+        Context context = MainActivity.this;
+        if (isInternetAvailable(context)) {
+            new GetAsyncServerResponse(context, this).execute();
+        } else {
+            Toast.makeText(context, context.getString(R.string.noInternet),Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -105,5 +114,17 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
 
         startActivityForResult(Intent.createChooser(sharingIntent, getString(R.string.CondividiCon)), SHARE_PICKER);
     }
+
+    // TODO: Codice replicato anche nel widget. Trovare un modo per scriverlo una sola volta (es. in una classe helper)
+    private boolean isInternetAvailable(Context context){
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
+    }
+
 
 }

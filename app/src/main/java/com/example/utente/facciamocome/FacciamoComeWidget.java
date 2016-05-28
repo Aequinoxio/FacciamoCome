@@ -7,6 +7,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -23,7 +25,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
     private Context ctx;
 
     // Chiave per passare la frase alla ShareActivity per la condivisione della frase
-  //  public static final String ACTION_BUTTON1_CLICKED = "com.example.utente.FacciamoCome.BUTTON1_CLICKED";
+    //  public static final String ACTION_BUTTON1_CLICKED = "com.example.utente.FacciamoCome.BUTTON1_CLICKED";
 
     // Id unico per l'intent. In caso contrario non viene passata alcuna stringa ma viene riutilizzato uno degli intent già esistenti
     private static int shareActivityRequestCode=789;
@@ -87,7 +89,12 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
         // Salvo il contesto per ogni evenienza
         ctx=context;
-        new GetAsyncServerResponse(context,this).execute();
+
+        if (isInternetAvailable(context)) {
+            new GetAsyncServerResponse(context, this).execute();
+        } else {
+            showToastMessage(context);
+        }
     }
 
     @Override
@@ -103,7 +110,12 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         updateUI(context);
 
         // Log.e("Widget_onReceive","onReceive");
-        new GetAsyncServerResponse(context, this).execute();
+        if (isInternetAvailable(context)) {
+            new GetAsyncServerResponse(context, this).execute();
+        } else {
+            showToastMessage(context);
+        }
+
     }
 
     /**
@@ -122,6 +134,20 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         int[] appWidgetIds = appWidgetManager.getAppWidgetIds(thisAppWidget);
 
         onUpdate(context, appWidgetManager, appWidgetIds);
+    }
+
+    private boolean isInternetAvailable(Context context){
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+        return isConnected;
+    }
+
+    private void showToastMessage(Context context){
+        Toast.makeText(context, context.getString(R.string.noInternet),Toast.LENGTH_LONG).show();
     }
 }
 

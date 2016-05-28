@@ -11,4 +11,6 @@
     <string name="title_activity_share">ShareActivity</string>
 
     <string name="IntentExtraPhrase">com.example.utente.facciamocome.phrase</string>
+
+    <string name="noInternet">Connettività assente</string>
 </resources>
