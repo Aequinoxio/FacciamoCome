@@ -31,10 +31,10 @@ public class GetAsyncServerResponse extends AsyncTask<Void, Void, Void> {
     // JSONArray jsonRisposta;
     // ArrayList<HashMap<String, String>> mappaRisposta;
 
-    private static final String TAG_PHRASE= "phrase";
-    private static final String TAG_ID = "id";
-    private static final String TAG_COUNTRY_ID = "country_id";
-    private static final String TAG_COLOR= "color";
+    private String TAG_PHRASE= ApplicationUtils.TAG_PHRASE;
+    private String TAG_ID = ApplicationUtils.TAG_ID;
+    private String TAG_COUNTRY_ID = ApplicationUtils.TAG_COUNTRY_ID;
+    private String TAG_COLOR= ApplicationUtils.TAG_COLOR;
 
     public GetAsyncServerResponse(Context context, AsyncTaskCompleteListener<String> cb) {
         this.context = context;

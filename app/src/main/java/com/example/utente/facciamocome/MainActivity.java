@@ -32,30 +32,38 @@ import java.util.HashMap;
 public class MainActivity extends AppCompatActivity implements AsyncTaskCompleteListener<String>{
     private static String url ;
 
-    private static final String TAG_PHRASE= "phrase";
-    private static final String TAG_ID = "id";
-    private static final String TAG_COUNTRY_ID = "country_id";
-    private static final String TAG_COLOR= "color";
-
     // ID per cancellare il file immagine dopo che l'ho condiviso
     static final int SHARE_PICKER=777;
+
+    private String phrase;
 
     // private ProgressDialog pDialog;
 
     public void onTaskComplete(String result){
         // Aggiorna la label del widget
+        phrase=result;
         TextView textView = (TextView) findViewById(R.id.txtPhrase);
         textView.setText(result);
+        ApplicationUtils.saveLatestPhrase(this.getApplicationContext(),ApplicationUtils.SharedActivityLatestPhraseKey, phrase);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         url = getString(R.string.serverURL);
 
-        startServerRequest();
+        // Carico l'ultima frase mostrata
+        phrase=ApplicationUtils.loadLatestPhrase(this.getApplicationContext(),ApplicationUtils.SharedActivityLatestPhraseKey);
+        TextView textView = (TextView) findViewById(R.id.txtPhrase);
+        textView.setText(phrase);
+
+       // startServerRequest();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     public void getPhrase(View v){
@@ -65,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
     private void startServerRequest(){
         // Occorre passare il contesto della main activity e non dell'applicatio (getApplicationContext)
         Context context = MainActivity.this;
-        if (isInternetAvailable(context)) {
+        if (ApplicationUtils.isInternetAvailable(context)) {
             new GetAsyncServerResponse(context, this).execute();
         } else {
             Toast.makeText(context, context.getString(R.string.noInternet),Toast.LENGTH_LONG).show();
@@ -106,25 +114,10 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
 
     public void scegliShareMethod(View view){
         Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        TextView textView = (TextView) findViewById(R.id.txtPhrase);
-        String phrase = (String) textView.getText();
 
         sharingIntent.setType(getString(R.string.ShareMimeType));
         sharingIntent.putExtra(Intent.EXTRA_TEXT, phrase);
 
         startActivityForResult(Intent.createChooser(sharingIntent, getString(R.string.CondividiCon)), SHARE_PICKER);
     }
-
-    // TODO: Codice replicato anche nel widget. Trovare un modo per scriverlo una sola volta (es. in una classe helper)
-    private boolean isInternetAvailable(Context context){
-        ConnectivityManager cm =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-        return isConnected;
-    }
-
-
 }

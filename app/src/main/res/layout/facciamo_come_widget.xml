@@ -2,11 +2,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/roundedrect"
-    android:padding="@dimen/widget_margin">
+    android:padding="@dimen/widget_margin"
+    android:clickable="true"
+    android:id="@+id/relativeLayout">
 
     <ImageButton
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:id="@+id/buttonWdgShare"
         android:src="@android:drawable/ic_menu_share"
         android:layout_centerVertical="true"
@@ -35,8 +37,21 @@
         android:paddingLeft="1dp"
         android:paddingRight="1dp"
         android:layout_centerVertical="true"
-        android:layout_toLeftOf="@+id/buttonWdgShare"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_toLeftOf="@+id/textView3"
+        android:layout_toStartOf="@+id/textView3" />
+
+    <TextView
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:background="@android:color/darker_gray"
+        android:id="@+id/textView3"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/buttonWdgShare"
+        android:layout_toStartOf="@+id/buttonWdgShare"
+        android:layout_marginTop="1dp"
+        android:layout_marginBottom="1dp" />
 
 </RelativeLayout>

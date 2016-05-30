@@ -7,8 +7,11 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -54,6 +57,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         //You need to specify a proper flag for the intent. Or else the intent will become deleted.
         PendingIntent pendingSync = PendingIntent.getBroadcast(context,broadCastRequestCode, intentSync, PendingIntent.FLAG_UPDATE_CURRENT);
         views.setOnClickPendingIntent(R.id.txtPhraseWidget,pendingSync);
+        views.setOnClickPendingIntent(R.id.relativeLayout,pendingSync);
 
         // Creo un intent specifico per lanciare la ShareActivity (l'ho resa non visibile nel manifest) al clico sul pulsante nel widget
         Intent intentBtn = new Intent(context, ShareActivity.class);
@@ -85,15 +89,15 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Log.e("Widget_enabled","enabled");
 
         // Inizializzo la textarea della frase
-        phrase=context.getString(R.string.app_name);
+        phrase=ApplicationUtils.loadLatestPhrase(context, ApplicationUtils.SharedWidgetLatestPhraseKey);
 
         // Salvo il contesto per ogni evenienza
         ctx=context;
 
-        if (isInternetAvailable(context)) {
+        if (ApplicationUtils.isInternetAvailable(context)) {
             new GetAsyncServerResponse(context, this).execute();
         } else {
-            showToastMessage(context);
+            // showToastMessage(context);
         }
     }
 
@@ -110,12 +114,14 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         updateUI(context);
 
         // Log.e("Widget_onReceive","onReceive");
-        if (isInternetAvailable(context)) {
+        // Prelevo la prossima frase
+        if (ApplicationUtils.isInternetAvailable(context)) {
             new GetAsyncServerResponse(context, this).execute();
         } else {
-            showToastMessage(context);
+            if (intent.getAction().equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)) {
+                showToastMessage(context);
+            }
         }
-
     }
 
     /**
@@ -124,6 +130,12 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
      */
     private void updateUI(Context context){
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.facciamo_come_widget);
+
+        if (phrase==null){
+            phrase=ApplicationUtils.loadLatestPhrase(context, ApplicationUtils.SharedWidgetLatestPhraseKey);
+        } else {
+            ApplicationUtils.saveLatestPhrase(context, ApplicationUtils.SharedWidgetLatestPhraseKey, phrase);
+        }
 
         // find your TextView here by id here and update it.
         views.setTextViewText(R.id.txtPhraseWidget, phrase);
@@ -136,18 +148,8 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
-    private boolean isInternetAvailable(Context context){
-        ConnectivityManager cm =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-        return isConnected;
-    }
-
     private void showToastMessage(Context context){
-        Toast.makeText(context, context.getString(R.string.noInternet),Toast.LENGTH_LONG).show();
+        Toast.makeText(context, context.getString(R.string.noInternet),Toast.LENGTH_SHORT).show();
     }
 }
 
