@@ -77,9 +77,11 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Mostro o nascondo la progressbar
         if (showProgressBar){
             views.setViewVisibility(R.id.progressBar, View.VISIBLE);
+            views.setInt(R.id.relativeLayout, "setBackgroundResource", R.drawable.roundedrect_solid);
         } else {
             // Impostandolo in INVISIBLE per motivi ignoti in Lollipop Samsung A5 resta a volte visibile anche se ferma
             views.setViewVisibility(R.id.progressBar, View.GONE);
+            views.setInt(R.id.relativeLayout, "setBackgroundResource", R.drawable.roundedrect);
         }
 
         // Instruct the widget manager to update the widget
