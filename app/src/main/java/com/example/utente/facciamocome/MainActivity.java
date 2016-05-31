@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListAdapter;
+import android.widget.ProgressBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +32,7 @@ import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements AsyncTaskCompleteListener<String>{
     private static String url ;
+    private boolean showProgressBar=false;
 
     // ID per cancellare il file immagine dopo che l'ho condiviso
     static final int SHARE_PICKER=777;
@@ -45,6 +47,9 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         TextView textView = (TextView) findViewById(R.id.txtPhrase);
         textView.setText(result);
         ApplicationUtils.saveLatestPhrase(this.getApplicationContext(),ApplicationUtils.SharedActivityLatestPhraseKey, phrase);
+        showProgressBar=false;
+
+        showProgressBar();
     }
 
     @Override
@@ -58,7 +63,10 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         TextView textView = (TextView) findViewById(R.id.txtPhrase);
         textView.setText(phrase);
 
-       // startServerRequest();
+        // Check per il prio avvio: Se la frase è quella di default e sono connesso ad internet, avvio la richiesta al server
+        if (phrase.equals(getString(R.string.app_name)) && ApplicationUtils.isInternetAvailable(MainActivity.this)){
+            startServerRequest();
+        }
     }
 
     @Override
@@ -78,6 +86,8 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         } else {
             Toast.makeText(context, context.getString(R.string.noInternet),Toast.LENGTH_LONG).show();
         }
+        showProgressBar=true;
+        showProgressBar();
     }
 
     @Override
@@ -119,5 +129,11 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         sharingIntent.putExtra(Intent.EXTRA_TEXT, phrase);
 
         startActivityForResult(Intent.createChooser(sharingIntent, getString(R.string.CondividiCon)), SHARE_PICKER);
+    }
+
+    private void showProgressBar(){
+        ProgressBar progressBar = (ProgressBar)findViewById(R.id.progressBar2);
+        progressBar.setVisibility((showProgressBar && ApplicationUtils.isInternetAvailable(MainActivity.this)) ?
+                View.VISIBLE:View.INVISIBLE);
     }
 }

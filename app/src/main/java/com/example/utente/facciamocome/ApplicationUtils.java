@@ -18,7 +18,6 @@ public class ApplicationUtils {
     public static final String TAG_COUNTRY_ID = "country_id";
     public static final String TAG_COLOR= "color";
 
-
     private static ApplicationUtils ourInstance = new ApplicationUtils();
 
     public static ApplicationUtils getInstance() {
