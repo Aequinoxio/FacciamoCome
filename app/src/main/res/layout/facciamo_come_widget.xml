@@ -65,7 +65,7 @@
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:background="@drawable/gradient"
+        android:background="@android:color/darker_gray"
         android:id="@+id/textView3"
         android:layout_alignParentTop="true"
         android:layout_toLeftOf="@+id/buttonWdgShare"
