@@ -8,7 +8,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
-        versionName '1.5.3'
+        versionName '1.6.2'
     }
     buildTypes {
         release {
@@ -16,6 +16,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             proguardFile 'C:/Users/utente/AppData/Local/Android/sdk/tools/proguard/proguard-android.txt'
             zipAlignEnabled true
+            debuggable false
         }
     }
     productFlavors {

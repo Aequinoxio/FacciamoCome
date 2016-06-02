@@ -20,9 +20,27 @@
             android:layout_height="wrap_content"
             android:id="@+id/progressBar"
             android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="false"
-            android:layout_alignParentEnd="false"
-            android:layout_alignParentStart="false" />
+            android:layout_alignStart="@+id/txtTime"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentLeft="false" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/txtTime"
+            android:id="@+id/txtTime"
+            android:layout_alignParentTop="false"
+            style="@style/Base.TextAppearance.AppCompat.Small"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="8sp"
+            android:layout_alignParentBottom="false"
+            android:shadowColor="#FF000000"
+            android:textColor="@android:color/white"
+            android:background="@android:color/transparent"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:gravity="center_horizontal" />
 
     </RelativeLayout>
 

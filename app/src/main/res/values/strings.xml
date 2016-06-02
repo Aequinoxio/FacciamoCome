@@ -10,7 +10,17 @@
     <string name="CondividiCon">Condividi con…</string>
     <string name="title_activity_share">ShareActivity</string>
 
+    <string name="txtTime">Next\n00:00</string>
+
     <string name="IntentExtraPhrase">com.example.utente.facciamocome.phrase</string>
 
-    <string name="noInternet">Connettività assente</string>
+    <string name="noInternet">Connettività assente\nPrelevo la frase dal DB locale.</string>
+    <string name="jsonStringError">Nessun dato dal server</string>
+
+    <string name="notification_Title">Facciamo come...</string>
+    <string name="notification_Ticker">Ticker</string>
+    <string name="notification_Text">Nuova frase arrivata!</string>
+    <string name="notification_SubText">Nuova frase sul widget</string>
+
+    <string name="sqlSelectLocalRandomPhrase">SELECT phrase FROM phrases ORDER BY RANDOM() LIMIT 1</string>
 </resources>

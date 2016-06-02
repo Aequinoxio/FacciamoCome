@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,7 +78,8 @@ public class GetAsyncServerResponse extends AsyncTask<Void, Void, Void> {
                 e.printStackTrace();
             }
         } else {
-            Log.e("ServiceHandler", "Couldn't get any data from the url");
+            // Log.e("ServiceHandler", "Couldn't get any data from the url");
+            Toast.makeText(context, context.getString(R.string.jsonStringError), Toast.LENGTH_SHORT).show();
         }
 
         return null;
