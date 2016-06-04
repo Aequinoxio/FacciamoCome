@@ -21,10 +21,10 @@ import android.util.Log;
 
 public class DatabaseHandler extends SQLiteOpenHelper {
     // Database Version
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 3;
 
-    // Labels table name
-    private static final String TABLE_LIVELLI = "livelli";
+//    // Labels table name
+//    private static final String TABLE_LIVELLI = "livelli";
 
     private static String TAG = "DataBaseHandler"; // Tag just for the LogCat window
 

@@ -8,13 +8,13 @@ android {
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
-        versionName '1.6.2'
+        versionName '2.0'
     }
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-            proguardFile 'C:/Users/utente/AppData/Local/Android/sdk/tools/proguard/proguard-android.txt'
+            proguardFile 'C:/Users/utente/AppData/Local/Android/sdk/tools/proguard/proguard-android-optimize.txt'
             zipAlignEnabled true
             debuggable false
         }
@@ -50,4 +50,6 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:design:23.4.0'
+    compile 'com.android.support:support-v4:23.4.0'
+    compile 'ch.acra:acra:4.9.0'
 }

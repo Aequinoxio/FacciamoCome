@@ -1,7 +1,11 @@
 package com.example.utente.facciamocome;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteConstraintException;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -17,12 +21,14 @@ public class ApplicationUtils {
     public final static String SharedActivityLatestPhraseKey="activityLatestPhrase";
 
     public final static String alarmWidgetUpdateFilter= "com.example.utente.facciamocome.AlarmUpdateWidget";
+    public final static String settingsWidgetUpdateFilter= "com.example.utente.facciamocome.SettingsUpdateWidget";
+
     public final static int    alarmWidgetUpdateActionRequestCode=7901;
+    public final static int    settingsWidgetUpdateActionRequestCode=7902;
 
     public final static int    notificationID = 8901;
 
-    public final static int    alarmStartSecs = 1;
-    public final static int    alarmRepeatSecs = 10*60; // 10 minuti
+    public final static int    SETTINGS_RESULTCODE=9876;
 
     public static final String TAG_PHRASE= "phrase";
     public static final String TAG_ID = "id";
@@ -30,6 +36,17 @@ public class ApplicationUtils {
     public static final String TAG_COLOR= "color";
 
     public static DataAdapter mDbHelper=null;
+
+    public final static int phraseFromWidget=0;  // Costanti per indicare da quale parte inserisco le frasi nel DB
+    public final static int phraseFromApp=1;
+
+    private static boolean notificationEnabled;
+    private static boolean notificationSoundEnabled;
+    private static boolean loadFromLocalDBEnabled;
+    private static boolean showToastOnConnection;
+
+    private static int     alarmRepeatSecs=10*60; // inizializzo a 10 minuti per sicurezza
+    private final static int minAlarmRepeatSecs=10*60;
 
     private static ApplicationUtils ourInstance = new ApplicationUtils();
 
@@ -66,9 +83,7 @@ public class ApplicationUtils {
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
-        return isConnected;
+        return (activeNetwork != null && activeNetwork.isConnectedOrConnecting());
     }
 
     // Aggiorno il DB creandolo se necessario. Ne conservo una istanza
@@ -78,5 +93,93 @@ public class ApplicationUtils {
             mDbHelper.createDatabase();
         }
         return mDbHelper;
+    }
+
+    /**
+     * Aggiorno il DB con una nuova frase
+     * @param context
+     * @param phrase_ID
+     * @param phrase
+     * @param widgetOrApp   // 0 se devo aggiornare le frasi dell'app, 1 per il widget
+     */
+    public static void updateLocalDB(Context context, int phrase_ID, String phrase, int widgetOrApp){
+
+        int historyLimit=context.getResources().getInteger(R.integer.sqlHistoryLimit);
+
+        mDbHelper=getDatabaseInstance(context);
+
+        mDbHelper.open();
+
+        String sql = "INSERT INTO history (id, phrase, source_widget, created_at) VALUES("+ String.valueOf(phrase_ID) +", "+
+                DatabaseUtils.sqlEscapeString(phrase)+", "+String.valueOf(widgetOrApp) +", datetime())";
+        try {
+            mDbHelper.setValues(sql);
+        } catch (SQLiteConstraintException sqlCE){
+            sqlCE.printStackTrace();
+        }
+
+        String widgetOrAppString = String.valueOf(widgetOrApp);
+        // Conto se siamo già a "historyLimit" frasi memorizzate
+        int numFrasi = Integer.valueOf(mDbHelper.getValues("SELECT count (*) FROM history where source_widget = "+widgetOrAppString,0).get(0));
+
+        if (numFrasi>historyLimit) {
+            sql = "delete from history where source_widget = "+ widgetOrAppString +" and autocounter not in (select autocounter from history where source_widget = "+widgetOrAppString+" order by created_at desc limit "+String.valueOf(historyLimit)+")";
+            // Elimino le frasi in più
+            mDbHelper.setValues(sql);
+        }
+
+        mDbHelper.close();
+    }
+
+    public static PhraseData getPhraseAndIdFromLocalDB(Context context){
+        PhraseData p = new PhraseData();
+
+        // Aggiorno il DB creandolo se necessario
+        mDbHelper = ApplicationUtils.getDatabaseInstance(context);
+
+        // Prendo la frase dal DB locale
+        mDbHelper.open();
+
+        Cursor cursor = mDbHelper.getCursor(context.getString(R.string.sqlSelectLocalRandomIdPhrase));
+        p.phrase_ID= cursor.getInt(0);
+        p.phrase =cursor.getString(1);
+
+        mDbHelper.close();
+
+        return (p);
+    }
+
+
+    public static void loadSharedPreferences(Context context){
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        notificationEnabled = sharedPreferences.getBoolean(context.getString(R.string.settingsReceiveNotifications),true);
+        notificationSoundEnabled = sharedPreferences.getBoolean(context.getString(R.string.settingsReceiveNotificationsSound),false);
+        loadFromLocalDBEnabled = sharedPreferences.getBoolean(context.getString(R.string.settingsLoadFromLocalDB),true);
+        showToastOnConnection = sharedPreferences.getBoolean(context.getString(R.string.settingsShowToast),true);
+
+        // Per sicurezza imposto il minimo valore a minAlarmRepeatSecs
+        alarmRepeatSecs = Math.max(minAlarmRepeatSecs,Integer.valueOf(
+                sharedPreferences.getString(context.getString(R.string.settingsRefreshTime),context.getString(R.string.app_name))
+        ));
+    }
+
+    public static boolean isNotificationEnabled() {
+        return notificationEnabled;
+    }
+
+    public static boolean isNotificationSoundEnabled() {
+        return notificationSoundEnabled;
+    }
+
+    public static boolean isLoadFromLocalDBEnabled() {
+        return loadFromLocalDBEnabled;
+    }
+
+    public static boolean isShowToastOnConnection() {
+        return showToastOnConnection;
+    }
+
+    public static int getAlarmRepeatSecs() {
+        return alarmRepeatSecs;
     }
 }

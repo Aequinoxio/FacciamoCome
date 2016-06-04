@@ -40,7 +40,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Medium"
+        android:textAppearance="@android:style/TextAppearance.Small"
         android:text="@string/help"
         android:id="@+id/textView"
         android:layout_above="@+id/imageButton"
@@ -63,6 +63,15 @@
         android:layout_centerHorizontal="true"
         android:id="@+id/view" />
 
+    <View style="@style/Divider"
+        android:layout_below="@+id/txtPhrase"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/view2" />
+
+    <View style="@style/Divider"
+        android:layout_below="@+id/textView4"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/view3" />
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"
@@ -75,5 +84,40 @@
         android:layout_alignParentStart="true"
         android:indeterminate="true"
         android:visibility="invisible" />
+
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@+id/progressBar2"
+        android:clickable="true"
+        android:layout_below="@+id/textView4" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/txtStorico"
+        android:id="@+id/textView4"
+        android:gravity="center_vertical"
+        android:layout_below="@+id/txtPhrase"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textColor="@android:color/black"
+        android:layout_toStartOf="@+id/switch1"
+        android:layout_alignBottom="@+id/switch1" />
+
+    <Switch
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="App/Widget"
+        android:id="@+id/switch1"
+        android:onClick="switchWidgetApp"
+        android:layout_below="@+id/txtPhrase"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:textColor="@android:color/black"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
 </RelativeLayout>

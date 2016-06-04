@@ -9,6 +9,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.media.RingtoneManager;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
@@ -21,15 +23,20 @@ import com.example.utente.facciamocome.databaseLocale.DataAdapter;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Implementation of App Widget functionality.
  */
-public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCompleteListener<String> {
+
+public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCompleteListener<Integer, String> {
 
     private static DataAdapter mDbHelper = null;
 
     private static String phrase;
+    private static int    phrase_id;
+
     private Context ctx;
 
     private Handler mHandler = new Handler();  // handler per attendere una frazione di secondo e mostrare il blink del widget e la progress bar
@@ -39,22 +46,21 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
     private Notification myNotication;
 
-    // Chiave per passare la frase alla ShareActivity per la condivisione della frase
-    //  public static final String ACTION_BUTTON1_CLICKED = "com.example.utente.FacciamoCome.BUTTON1_CLICKED";
-
     // Id unico per l'intent. In caso contrario non viene passata alcuna stringa ma viene riutilizzato uno degli intent già esistenti
     private static int shareActivityRequestCodeWidget =789;
     private static int shareActivityRequestCodeNotification=790;
     private static int broadCastRequestCode=791;
 
-    public void onTaskComplete(String result){
+    public void onTaskComplete(Integer id, String result){
         // Aggiorna la label del widget
         // Log.e("Widget",result);
 
         phrase=result;
+        phrase_id=id;
        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),phrase);
 
         showProgressBar = false;
+        ApplicationUtils.updateLocalDB(ctx,phrase_id,phrase,1);
         updateUI(ctx);
     }
 
@@ -83,7 +89,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Creo un intent specifico per lanciare la ShareActivity (l'ho resa non visibile nel manifest) al clico sul pulsante nel widget
         Intent intentBtn = new Intent(context, ShareActivity.class);
         // intentBtn.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        intentBtn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intentBtn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intentBtn.putExtra(context.getString(R.string.IntentExtraPhrase),phrase); // Passo la frase alla nuova attività
         PendingIntent pendingIntentBtn = PendingIntent.getActivity(context, shareActivityRequestCodeWidget, intentBtn, PendingIntent.FLAG_UPDATE_CURRENT);
         // Get the layout for the App Widget and attach an on-click listener to the button
@@ -121,39 +127,31 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Enter relevant functionality for when the first widget is created
         // Log.e("Widget_enabled","enabled");
 
-        // Aggiorno il DB creandolo se necessario
-        mDbHelper = ApplicationUtils.getDatabaseInstance(context);
+        ApplicationUtils.loadSharedPreferences(context);
 
-        // Inizializzo la textarea della frase
-        //phrase=ApplicationUtils.loadLatestPhrase(context, ApplicationUtils.SharedWidgetLatestPhraseKey);
-
-       // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"");
+        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"");
 
         // Salvo il contesto per ogni evenienza
         ctx=context;
 
         // Check per il primo avvio: Se la frase è quella di default e sono connesso ad internet, avvio la richiesta al server
-        if (/*phrase.equals(context.getString(R.string.app_name)) && */ ApplicationUtils.isInternetAvailable(context)){
+        if (ApplicationUtils.isInternetAvailable(context)){
             new GetAsyncServerResponse(context, this).execute();
         } else {
-            // Prendo la frase dal DB locale
-            mDbHelper.open();
-            phrase=mDbHelper.getValues(context.getString(R.string.sqlSelectLocalRandomPhrase), 0).get(0);
-            mDbHelper.close();
+            PhraseData p = ApplicationUtils.getPhraseAndIdFromLocalDB(context);
+            phrase=p.phrase;
+            phrase_id=p.phrase_ID;
         }
 
         setAlarm(context);
-      //  updateUI(context);
     }
 
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
+        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"");
 
         // Disabilito l'alarm
-
-       // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"");
-
         disableAlarm(context);
         super.onDisabled(context);
     }
@@ -162,48 +160,55 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
     public void onReceive(Context context, Intent intent){
         super.onReceive(context, intent);
 
+        ctx=context;
+
         String action = intent.getAction();
         // Per sicurezza. In questo modo evito un controllo sull'action nulla in seguito
         if (action==null) {
             action="";
         }
 
+        // Se sono chiamato dalla main activity a seguito di un cambio di preferenze, reimposto solo l'allarme
+        if (action.equals(ApplicationUtils.settingsWidgetUpdateFilter)){
+            disableAlarm(context);
+            setAlarm(context);
+            updateUI(context);
+            return;
+        }
+
         // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),action);
         // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"");
 
         if (ApplicationUtils.isInternetAvailable(context)) {
-            // Se aggiorno il widget tramite azioni diverse dall'alarm, disabilito l'alarm (lo riabilito alla fine del metodo)
-            // Se scatta l'alarm si disabilita da solo (non è repeated)
-            if (!action.equals(ApplicationUtils.alarmWidgetUpdateFilter)){
-                disableAlarm(context);
-            }
-
             // Prelevo la prossima frase
             new GetAsyncServerResponse(context, this).execute();
             showProgressBar=true;
-
         } else {
             // Estraggo una frase casuale dal db locale
-            // TODO: Punto per i settings
-            if (mDbHelper==null){
-                // DEBUG
-                // Log.e (Thread.currentThread().getStackTrace()[2].getMethodName(),"mDbHelper NULL");
-                //
-                mDbHelper=ApplicationUtils.getDatabaseInstance(context);
+            String toastMsg;
+            if (ApplicationUtils.isLoadFromLocalDBEnabled()) {
+                PhraseData p = ApplicationUtils.getPhraseAndIdFromLocalDB(context);
+                phrase=p.phrase;
+                phrase_id=p.phrase_ID;
+
+                toastMsg=context.getString(R.string.noInternetWithLocalDB);
+
+                // Aggiorno solo se ho una frase in locale
+                ApplicationUtils.updateLocalDB(context,phrase_id,phrase,1);
+
+            } else {
+                toastMsg=context.getString(R.string.noInternet);
             }
-
-            // Prendo la frase dal db locale
-            mDbHelper.open();
-            phrase=mDbHelper.getValues(context.getString(R.string.sqlSelectLocalRandomPhrase),0).get(0);
-            mDbHelper.close();
-
-            // Se aggiorno il widget tramite azioni di UPDATE, disabilito l'alarm (lo riabilito alla fine del metodo)
-            // Se scatta l'alarm si disabilita da solo (non è repeated)
-            // Mostro in questo caso un Toast sulla connettività
+            // Se aggiorno il widget tramite azioni di UPDATE mostro in questo caso un Toast sulla connettività
             if (action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)) {
-                showToastMessage(context);
-                disableAlarm(context);
+                showToastMessage(context, toastMsg);
             }
+        }
+
+        // Se aggiorno il widget tramite azioni diverse dall'alarm, disabilito l'alarm (lo riabilito alla fine del metodo)
+        // Se scatta l'alarm si disabilita da solo (non è repeated)
+        if (!action.equals(ApplicationUtils.alarmWidgetUpdateFilter)){
+            disableAlarm(context);
         }
 
         // Reiposto sempre l'allarme anche se non c'è connettività. Evito di registrare un broadcastReceiver
@@ -213,7 +218,10 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
         // Mostro sempre la notifica con il precedente messaggio
         updateUI(context);
-        showNotification(context);
+
+        if (ApplicationUtils.isNotificationEnabled()) {
+            showNotification(context);
+        }
     }
 
 
@@ -224,7 +232,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
      * @param context
      */
     private void updateUI(Context context){
-        // Ritardo il ringtone
+        // Ritardo l'aggiornamendo dell'UI
         ctx=context;
         if (phrase==null){
             phrase=ApplicationUtils.loadLatestPhrase(context, ApplicationUtils.SharedWidgetLatestPhraseKey);
@@ -258,17 +266,21 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
-    private void showToastMessage(Context context){
-        Toast toast = Toast.makeText(context, context.getString(R.string.noInternet),Toast.LENGTH_SHORT);
-        TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
-        if( v != null) v.setGravity(Gravity.CENTER);
-        toast.show();
+    private void showToastMessage(Context context, String msg){
+        if (ApplicationUtils.isShowToastOnConnection()) {
+            Toast toast = Toast.makeText(context, msg, Toast.LENGTH_SHORT);
+            TextView v = (TextView) toast.getView().findViewById(android.R.id.message);
+            if (v != null) v.setGravity(Gravity.CENTER);
+            toast.show();
+        }
     }
 
     private void showNotification(Context context){
        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),phrase);
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        /**************************/
+        // Share
         /**************************/
         // Creo un intent specifico per lanciare la ShareActivity (l'ho resa non visibile nel manifest) al clico sul pulsante nel widget
         Intent intentBtn2 = new Intent(context, ShareActivity.class);
@@ -278,11 +290,12 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Devo passare un altro codice altrimenti viene utilizzato il pending intent del bottone sul widget
         // STRANO, essendo impostato update_current dovrebbe sostituirlo...
         PendingIntent pendingIntentBtn2 = PendingIntent.getActivity(context, shareActivityRequestCodeNotification, intentBtn2, PendingIntent.FLAG_CANCEL_CURRENT);
-        /**************************/
 
 //        Log.e("showToastMessage", intentBtn2.getStringExtra("com.example.utente.facciamocome.Notifica"));
 
-        // Intent per la notifica
+        /**************************/
+        // Notifica
+        /**************************/
         //API level 11
         Intent intent = new Intent(); //(context, MainActivity.class);
         //intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -304,10 +317,9 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
         builder.addAction(R.drawable.ic_account_balance_black_18dp,"Condividi", pendingIntentBtn2);
 
-        // TODO:punto per i settings
-        // Decommenta se vuoi un suono nella notifica
-        //builder.setSound(Uri.parse(RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_NOTIFICATION).getPath()));
-        //builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+        if (ApplicationUtils.isNotificationSoundEnabled()) {
+            builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+        }
         builder.setOnlyAlertOnce(false);
 
         builder.setStyle(new Notification.BigTextStyle(builder).bigText(phrase));
@@ -336,9 +348,11 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 //        am.setRepeating(AlarmManager.RTC, System.currentTimeMillis()+ 1000 * ApplicationUtils.alarmStartSecs,
 //                1000 * ApplicationUtils.alarmRepeatSecs, pi);
 
-        // TODO: Punto per i settings
-        nextUpdate.setTime(System.currentTimeMillis()+ 1000 * ApplicationUtils.alarmRepeatSecs);
-        am.set(AlarmManager.RTC, nextUpdate.getTime(), pi);
+
+        // Calcolo l'inizio del minuto
+        long ora = ((System.currentTimeMillis()/60000)*60000);
+        nextUpdate.setTime( ora + 1000 * ApplicationUtils.getAlarmRepeatSecs());
+        am.set(AlarmManager.RTC_WAKEUP, nextUpdate.getTime(), pi);
     }
 
     private void disableAlarm(Context context){
@@ -354,5 +368,19 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(sender);
     }
+
+//    private void getPhraseAndIdFromLocalDB(Context context){
+//        // Aggiorno il DB creandolo se necessario
+//        mDbHelper = ApplicationUtils.getDatabaseInstance(context);
+//
+//        // Prendo la frase dal DB locale
+//        mDbHelper.open();
+//
+//        Cursor cursor = mDbHelper.getCursor(context.getString(R.string.sqlSelectLocalRandomIdPhrase));
+//        phrase_id= cursor.getInt(0);
+//        phrase =cursor.getString(1);
+//
+//        mDbHelper.close();
+//    }
 }
 

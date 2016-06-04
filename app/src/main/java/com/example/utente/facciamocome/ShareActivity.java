@@ -48,7 +48,6 @@ public class ShareActivity extends AppCompatActivity {
 
         sharingIntent.setType(getString(R.string.ShareMimeType));
         sharingIntent.putExtra(Intent.EXTRA_TEXT, phrase);
-
         startActivityForResult(Intent.createChooser(sharingIntent, getString(R.string.CondividiCon)), SHARE_PICKER);
     }
 }

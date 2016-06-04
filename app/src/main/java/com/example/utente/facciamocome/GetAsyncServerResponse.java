@@ -18,7 +18,7 @@ import org.json.JSONObject;
  * */
 public class GetAsyncServerResponse extends AsyncTask<Void, Void, Void> {
 
-    private AsyncTaskCompleteListener<String> callback;
+    private AsyncTaskCompleteListener<Integer, String> callback;
 
     Context context;
     private ProgressDialog pDialog;
@@ -37,7 +37,7 @@ public class GetAsyncServerResponse extends AsyncTask<Void, Void, Void> {
     private String TAG_COUNTRY_ID = ApplicationUtils.TAG_COUNTRY_ID;
     private String TAG_COLOR= ApplicationUtils.TAG_COLOR;
 
-    public GetAsyncServerResponse(Context context, AsyncTaskCompleteListener<String> cb) {
+    public GetAsyncServerResponse(Context context, AsyncTaskCompleteListener<Integer, String> cb) {
         this.context = context;
         this.callback = cb;
         url = context.getString(R.string.serverURL);
@@ -93,6 +93,6 @@ public class GetAsyncServerResponse extends AsyncTask<Void, Void, Void> {
             if (pDialog.isShowing())
                 pDialog.dismiss();
         }
-        callback.onTaskComplete(phrase);
+        callback.onTaskComplete(Integer.valueOf(id), phrase);
     }
 }
