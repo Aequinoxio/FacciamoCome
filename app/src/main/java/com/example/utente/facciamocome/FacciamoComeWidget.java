@@ -368,19 +368,5 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(sender);
     }
-
-//    private void getPhraseAndIdFromLocalDB(Context context){
-//        // Aggiorno il DB creandolo se necessario
-//        mDbHelper = ApplicationUtils.getDatabaseInstance(context);
-//
-//        // Prendo la frase dal DB locale
-//        mDbHelper.open();
-//
-//        Cursor cursor = mDbHelper.getCursor(context.getString(R.string.sqlSelectLocalRandomIdPhrase));
-//        phrase_id= cursor.getInt(0);
-//        phrase =cursor.getString(1);
-//
-//        mDbHelper.close();
-//    }
 }
 

@@ -75,13 +75,14 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         textView.setText(result);
         ApplicationUtils.saveLatestPhrase(this.getApplicationContext(),ApplicationUtils.SharedActivityLatestPhraseKey, phrase);
 
+        // Non aggiorno il db qui per non caricare subito la frase appena scaricata nell'history
+        // Lo faccio al click sul bottone di refresh o della textview con la frase
+        // Aggiornamento: Devo farlo qui e non nel medoto del pulsante perchè se l'attività viene fatta ripartire perdo la frase
+        ApplicationUtils.updateLocalDB(this, phrase_ID, phrase,0);
+
         //showProgressBar=false;
         showProgressBar(false);
         loadListView();
-
-        // Non aggiorno il db qui per non caricare subito la frase appena scaricata nell'history
-        // Lo faccio al click sul bottone di refresh o della textview con la frase
-        //updateLocalDB();
     }
 
     //
@@ -147,7 +148,8 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
     }
 
     public void getPhrase(View v){
-        ApplicationUtils.updateLocalDB(this, phrase_ID, phrase,0);
+        // Devo aggiornare il DB in onTask altrimenti perdo la frase se l'applicazione viene fatta ripartire
+        //ApplicationUtils.updateLocalDB(this, phrase_ID, phrase,0);
         startServerRequest();
     }
 
@@ -314,13 +316,4 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         // TODO Auto-generated method stub
 
     }
-
-//    private void getPhraseAndIdFromLocalDB(){
-//        // Prendo la frase dal db locale
-//        mDbHelper.open();
-//        Cursor cursor = mDbHelper.getCursor(this.getString(R.string.sqlSelectLocalRandomIdPhrase));
-//        phrase_ID= cursor.getInt(0);
-//        phrase =cursor.getString(1);
-//        mDbHelper.close();
-//    }
 }
