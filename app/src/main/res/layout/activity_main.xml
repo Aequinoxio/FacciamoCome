@@ -98,7 +98,8 @@
         android:layout_centerHorizontal="true"
         android:clickable="true"
         android:layout_below="@+id/textView4"
-        android:layout_above="@+id/view" />
+        android:layout_above="@+id/view"
+        android:longClickable="true" />
 
     <TextView
         android:layout_width="wrap_content"

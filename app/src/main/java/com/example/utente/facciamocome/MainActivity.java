@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -140,8 +141,6 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         TextView textView = (TextView) findViewById(R.id.txtPhrase);
         textView.setText(phrase);
 
-        // Aggiorno lo storico
-        updatelistViewDataLabel();
         ListView listView = (ListView)findViewById(R.id.listView);
         listView.setOnItemLongClickListener(this);
 
@@ -158,7 +157,21 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
                 historicalDataFromWidget=!historicalDataFromWidget;
                 updatelistViewDataLabel();
             }
+
+            // Trucchetto per far funzionare OnItemLongClickListener e OnTouchListener
+            // Visto su http://stackoverflow.com/questions/10946751/ontouch-onlongclick-together-in-android
+            // Se tornassi true allora avrei consumato l'evento. Con false lo faccio propagare per la gestione
+            // di OnItemLongClickListener ecc.
+            @Override
+            public boolean onTouch (View view, MotionEvent motionEvent){
+                super.onTouch(view, motionEvent);
+                return false;
+            }
         });
+
+        // Aggiorno lo storico
+        updatelistViewDataLabel();
+
     }
 
     private void updatelistViewDataLabel(){
