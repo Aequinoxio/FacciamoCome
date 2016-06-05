@@ -49,8 +49,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-// TODO: vedere perchè il widget ha mostrato molte frasi di seguito e poi si è fermato ma sono state memorizzate nello storico solo "Facciamo come..."
-
 public class MainActivity extends AppCompatActivity implements AsyncTaskCompleteListener<Integer, String>,
         AdapterView.OnItemSelectedListener, AdapterView.OnItemLongClickListener {
 
@@ -73,14 +71,13 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         phrase_ID=id;
         TextView textView = (TextView) findViewById(R.id.txtPhrase);
         textView.setText(result);
-        ApplicationUtils.saveLatestPhrase(this.getApplicationContext(),ApplicationUtils.SharedActivityLatestPhraseKey, phrase);
+        ApplicationUtils.saveLatestPhrase(this.getApplicationContext(), ApplicationUtils.phraseFromApp, phrase_ID, phrase);
 
         // Non aggiorno il db qui per non caricare subito la frase appena scaricata nell'history
         // Lo faccio al click sul bottone di refresh o della textview con la frase
         // Aggiornamento: Devo farlo qui e non nel medoto del pulsante perchè se l'attività viene fatta ripartire perdo la frase
-        ApplicationUtils.updateLocalDB(this, phrase_ID, phrase,0);
+        ApplicationUtils.updateLocalDB(this, phrase_ID, phrase,ApplicationUtils.phraseFromApp);
 
-        //showProgressBar=false;
         showProgressBar(false);
         loadListView();
     }
@@ -100,18 +97,25 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
 
     }//onActivityResult
 
+    // TODO: Sostituire phrase e phraseID con la classe PhraseData
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        PhraseData phraseData_temp;      // Appoggio per inizializzare la frase;
+
         // Imposto le preferenze al default
         PreferenceManager.setDefaultValues(this, R.xml.user_settings, false);
+        ApplicationUtils.loadSharedPreferences(this);
 
         url = getString(R.string.serverURL);
 
-        // Carico l'ultima frase mostrata
-        phrase=ApplicationUtils.loadLatestPhrase(this.getApplicationContext(),ApplicationUtils.SharedActivityLatestPhraseKey);
+        // Carico dalle preferences l'ultima frase mostrata per inizializzare
+        phraseData_temp = ApplicationUtils.loadLatestPhrase(this, ApplicationUtils.phraseFromApp);
+
+        phrase= phraseData_temp.phrase;
+        phrase_ID=phraseData_temp.phrase_ID;
 
         // Aggiorno il DB creandolo se necessario
         mDbHelper = ApplicationUtils.getDatabaseInstance(this.getApplicationContext());
@@ -120,10 +124,16 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         if (ApplicationUtils.isInternetAvailable(MainActivity.this)){
             startServerRequest();
         } else {
-            // Prendo la frase dal DB locale
-            PhraseData p = ApplicationUtils.getPhraseAndIdFromLocalDB(this);
-            phrase=p.phrase;
-            phrase_ID=p.phrase_ID;
+            // Prendo la frase dal DB locale in base alle opzioni
+            if (ApplicationUtils.isLoadFromLocalDBEnabled()) {
+                phraseData_temp= ApplicationUtils.getPhraseAndIdFromLocalDB(this);
+                phrase = phraseData_temp.phrase;
+                phrase_ID = phraseData_temp.phrase_ID;
+
+                // Chiamo esplicitamente onTackComplete per aggiornare l'Activity
+                // Aggiorno tutto come se avessi caricato la frase dal server
+                onTaskComplete(phrase_ID, phrase);
+            }
         }
 
         // Aggiorno la frase mostrata
@@ -131,51 +141,53 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         textView.setText(phrase);
 
         // Aggiorno lo storico
-        loadListView();
+        updatelistViewDataLabel();
         ListView listView = (ListView)findViewById(R.id.listView);
         listView.setOnItemLongClickListener(this);
+
+        // Imposto lo swipe
+        listView.setOnTouchListener (new OnSwipeTouchListener(this) {
+            @Override
+            public void onSwipeLeft() {
+                historicalDataFromWidget=!historicalDataFromWidget;
+                updatelistViewDataLabel();
+            }
+
+            @Override
+            public void onSwipeRight(){
+                historicalDataFromWidget=!historicalDataFromWidget;
+                updatelistViewDataLabel();
+            }
+        });
     }
 
+    private void updatelistViewDataLabel(){
+        // Whatever
+        loadListView();
+        // Imposto la visualizzazione dello switch in modo corretto
+        TextView textView = (TextView)findViewById(R.id.textView4);
+        textView.setText( historicalDataFromWidget?getString(R.string.txtStoricoWidget):
+                getString(R.string.txtStoricoApp)
+        );
+
+    }
     @Override
     protected void onResume() {
         super.onResume();
         ApplicationUtils.loadSharedPreferences(this);
-        loadListView();
-
-        // Imposto la visualizzazione dello switch in modo corretto
-        Switch aSwitch = (Switch)findViewById(R.id.switch1);
-        aSwitch.setChecked(historicalDataFromWidget);
+        updatelistViewDataLabel();
     }
 
     public void getPhrase(View v){
         // Devo aggiornare il DB in onTask altrimenti perdo la frase se l'applicazione viene fatta ripartire
-        //ApplicationUtils.updateLocalDB(this, phrase_ID, phrase,0);
+        //ApplicationUtils.updateLocalDB(this, phrase_ID, phrase,ApplicationUtils.phraseFromApp);
         startServerRequest();
-    }
-
-    public void switchWidgetApp(View v){
-        Switch aSwitch= (Switch)findViewById(R.id.switch1);
-        if (aSwitch.isChecked()){
-            historicalDataFromWidget=true;
-        } else {
-            historicalDataFromWidget=false;
-        }
-
-//        // Imposto le label - Per ora è commentato in quanto sono troppo lunghe
-//         // Lasciato per il futuro
-//        TextView textView = (TextView)findViewById(R.id.textView4);
-//        textView.setText( historicalDataFromWidget?getString(R.string.txtStoricoWidget):
-//                getString(R.string.txtStoricoApp)
-//        );
-
-        loadListView();
     }
 
     private void startServerRequest(){
         // Occorre passare il contesto della main activity e non dell'applicatione (getApplicationContext)
         Context context = MainActivity.this;
 
-        //showProgressBar=true;
         showProgressBar(true);
 
         if (ApplicationUtils.isInternetAvailable(context)) {
@@ -199,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
                 phrase_ID=p.phrase_ID;
 
                 // Chiamo esplicitamente onTackComplete per aggiornare l'Activity
+                // Aggiorno tutto come se avessi caricato la frase dal server
                 onTaskComplete(phrase_ID,phrase);
             } else {
                 if (ApplicationUtils.isShowToastOnConnection()) {
@@ -225,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        // About
         if (id == R.id.action_about) {
             String s = getString(R.string.app_name) +" - Ver. " + BuildConfig.VERSION_NAME ;
             s+="\nby "+ getString(R.string.Autore);
@@ -240,10 +254,30 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
             return true;
         }
 
+        // Settings
         if (id == R.id.action_settings){
             Intent intentSettings= new Intent(getApplicationContext(),SettingsActivity.class);
             startActivityForResult(intentSettings, ApplicationUtils.SETTINGS_RESULTCODE);
 
+            return true;
+        }
+
+        // Reload frase
+        if (id == R.id.action_reload){
+                getPhrase(this.findViewById(R.id.mainLayout));
+            return true;
+        }
+
+        // Reload frase
+        if (id == R.id.action_share){
+            scegliShareMethod(this.findViewById(R.id.mainLayout));
+            return true;
+        }
+
+        // Help
+        if (id == R.id.action_help){
+            Intent intentSettings= new Intent(getApplicationContext(),HelpActivity.class);
+            startActivity(intentSettings);
             return true;
         }
 
@@ -276,8 +310,8 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
 
         mDbHelper.open();
 
-        String sql = (historicalDataFromWidget)?getApplicationContext().getString(R.string.sqlSelectHistoryPhrasesWidget):
-                getApplicationContext().getString(R.string. sqlSelectHistoryPhrasesApp);
+        String sql = (historicalDataFromWidget)?getString(R.string.sqlSelectHistoryPhrasesWidget):
+                getString(R.string. sqlSelectHistoryPhrasesApp);
 
         List<String> frasi=mDbHelper.getValues(sql,0);
 

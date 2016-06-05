@@ -40,7 +40,7 @@ import java.util.UUID;
 public class MyApplication extends Application {
     // Comunque si faccia i Singleton in Android non sono affidabili. Se l'applicazione passa in background
     // Vengono reinizializzati
-    ApplicationUtils applicationSettings ;
+    private static Context ctx;
 
     // File che memorizza una UUID e verificare se l'applicazione è già stata eseguita
     private static final String INSTALLATION = "INSTALLATO";
@@ -76,13 +76,14 @@ public class MyApplication extends Application {
         // The following line triggers the initialization of ACRA
         ACRA.init(this);
 
-        // Inizializzo il Singleton e mi salvo una istanza
-        applicationSettings=ApplicationUtils.getInstance();
-
         // Verifico se è la prima esecuzione e provo a mandare i dati
         checkFirstRunAndSendData();
+        ctx=getApplicationContext();
     }
 
+    public static Context getContext(){
+        return ctx;
+    }
 //    protected void finalize(){
 //        applicationSettings=ApplicationSettings.getInstance();
 //    }

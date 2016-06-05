@@ -5,10 +5,11 @@
     <string name="Autore">Gabriele Galluzzo</string>
     <string name="descrizione">Facciamo come... è un\'interfaccia android al sito Facciamocome™ (http://www.facciamocome.org/).\nIl sito Facciamocome™ è un generatore random di supercazzole esterofile e piddine.\nL\'app non è affiliata a sito né l\'autore ha collegamenti con sito stesso.</string>
     <string name="add_widget">Add widget</string>
-    <string name="help">Clicca il testo in alto oppure il bottone in basso a sinistra per avere un\'altra chicca piddina o un luogo comune sull\'Italia e gli italiani.\nSe ti piace una frase, puoi anche condividerla.</string>
+    <string name="help">Clicca la frase in alto oppure il bottone nella barra per avere un\'altra chicca piddina o un luogo comune sull\'Italia e gli italiani.\nSe ti piace una frase, puoi anche condividerla.</string>
     <string name="ShareMimeType">text/plain</string>
     <string name="CondividiCon">Condividi con…</string>
     <string name="title_activity_share">Facciamo come... condividi</string>
+
 
     <string name="crash_report">Crash rilevato, preparo il report</string>
 
@@ -16,7 +17,7 @@
 
     <string name="IntentExtraPhrase">com.example.utente.facciamocome.phrase</string>
 
-    <string name="noInternet">Connettività assente</string>
+    <string name="noInternet">Connettività assente\nQuesta frase non è presa dal DB locale\nNon la salvo</string>
     <string name="noInternetWithLocalDB">Connettività assente\nPrelevo la frase dal DB locale.</string>
     <string name="jsonStringError">Nessun dato dal server</string>
 
@@ -39,6 +40,13 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
 
+    <string name="action_reload">Altra frase</string>
+    <string name="action_share">Condividi</string>
+    <string name="action_help">Help</string>
+
+    <string name="settingsFirstPhrase">Facciamo come...</string>
+    <string name="settingsFirstPhraseID">0</string>
+
     <string name="settingsReceiveNotifications">receiveNotifications</string>
     <string name="settingsReceiveNotificationsTitle">Nuova frase nel widget</string>
     <string name="settingsReceiveNotificationsSummary">Notifico la nuova frase mostrata nel widget?</string>
@@ -59,9 +67,16 @@
     <string name="settingsRefreshTime">refreshTime</string>
     <string name="settingsRefreshTimeTitle">Ricarico il widget ogni...</string>
     <string name="settingsRefreshTimeSummary">refreshTime</string>
+
+    <string name="settingsDisableACRA">Disabilita CrashReport</string>
+    <string name="settingsDisableACRATitle">Disabilito il report in caso di crash?</string>
+    <string name="settingsDisableACRASummaryOn">Disabilitato</string>
+    <string name="settingsDisableACRASummaryOff">Abilitato</string>
+
     <string name="txtStorico">Le ultime 20 frasi già mostrate</string>
     <string name="txtStoricoApp">Le ultime 20 frasi già mostrate nell\'app</string>
     <string name="txtStoricoWidget">Le ultime 20 frasi già mostrate nel widget</string>
+    <string name="title_activity_help">Un aiuto veloce...</string>
 
     <!--<string name="settingsArrayRefreshTime">arrayRefreshTime</string>-->
     <!--<string name="settingsArrayRefreshTimeValues">arrayRefreshTimeValues</string>-->

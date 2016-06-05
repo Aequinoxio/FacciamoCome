@@ -32,7 +32,8 @@ import java.util.StringTokenizer;
 
 public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCompleteListener<Integer, String> {
 
-    private static DataAdapter mDbHelper = null;
+    ApplicationUtils applicationUtils = ApplicationUtils.getInstance();
+   // private static DataAdapter mDbHelper = null;
 
     private static String phrase;
     private static int    phrase_id;
@@ -60,7 +61,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),phrase);
 
         showProgressBar = false;
-        ApplicationUtils.updateLocalDB(ctx,phrase_id,phrase,1);
+        ApplicationUtils.updateLocalDB(ctx,phrase_id,phrase,ApplicationUtils.phraseFromWidget);
         updateUI(ctx);
     }
 
@@ -126,22 +127,29 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
     public void onEnabled(Context context) {
         // Enter relevant functionality for when the first widget is created
         // Log.e("Widget_enabled","enabled");
-
-        ApplicationUtils.loadSharedPreferences(context);
-
-        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"");
-
         // Salvo il contesto per ogni evenienza
         ctx=context;
 
-        // Check per il primo avvio: Se la frase è quella di default e sono connesso ad internet, avvio la richiesta al server
-        if (ApplicationUtils.isInternetAvailable(context)){
-            new GetAsyncServerResponse(context, this).execute();
-        } else {
-            PhraseData p = ApplicationUtils.getPhraseAndIdFromLocalDB(context);
-            phrase=p.phrase;
-            phrase_id=p.phrase_ID;
-        }
+        ApplicationUtils.loadSharedPreferences(context);
+        // Inizializzo con la frase delel preferences
+        PhraseData p = ApplicationUtils.loadLatestPhrase(context, ApplicationUtils.phraseFromWidget);
+        phrase=p.phrase;
+        phrase_id=p.phrase_ID;
+
+        //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"-----------------");
+
+        // Non faccio nulla al primo avvio. Viene comunque invocato il metodo con l'azione Update.
+        // L'aggiornamento lo faccio li
+//        // Check per il primo avvio: Se la frase è quella di default e sono connesso ad internet, avvio la richiesta al server
+//        if (ApplicationUtils.isInternetAvailable(context)){
+//            new GetAsyncServerResponse(context, this).execute();
+//        } else {
+//            if (ApplicationUtils.isLoadFromLocalDBEnabled()) {
+//                p = ApplicationUtils.getPhraseAndIdFromLocalDB(context);
+//                phrase = p.phrase;
+//                phrase_id = p.phrase_ID;
+//            }
+//        }
 
         setAlarm(context);
     }
@@ -159,13 +167,25 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
     @Override
     public void onReceive(Context context, Intent intent){
         super.onReceive(context, intent);
-
+        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"in on receive");
         ctx=context;
+
+        ApplicationUtils applicationUtils = ApplicationUtils.getInstance();
 
         String action = intent.getAction();
         // Per sicurezza. In questo modo evito un controllo sull'action nulla in seguito
         if (action==null) {
-            action="";
+            action="null";
+        }
+
+        //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),action);
+
+        // Esco subito se il widget è stato caricato o se è disabilitato o rimosso
+        // Negli altri casi lo aggiorno
+        if (action.equals(AppWidgetManager.ACTION_APPWIDGET_ENABLED) ||
+                action.equals(AppWidgetManager.ACTION_APPWIDGET_DISABLED) ||
+                action.equals(AppWidgetManager.ACTION_APPWIDGET_DELETED)){
+            return;
         }
 
         // Se sono chiamato dalla main activity a seguito di un cambio di preferenze, reimposto solo l'allarme
@@ -173,6 +193,8 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
             disableAlarm(context);
             setAlarm(context);
             updateUI(context);
+            //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"Return");
+
             return;
         }
 
@@ -183,10 +205,16 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
             // Prelevo la prossima frase
             new GetAsyncServerResponse(context, this).execute();
             showProgressBar=true;
+            //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"IsInternetAvailable true");
+
         } else {
             // Estraggo una frase casuale dal db locale
             String toastMsg;
+            //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"IsInternetAvailable false");
+
             if (ApplicationUtils.isLoadFromLocalDBEnabled()) {
+                //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"isLoadFromLocalDBEnabled true");
+
                 PhraseData p = ApplicationUtils.getPhraseAndIdFromLocalDB(context);
                 phrase=p.phrase;
                 phrase_id=p.phrase_ID;
@@ -194,14 +222,18 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
                 toastMsg=context.getString(R.string.noInternetWithLocalDB);
 
                 // Aggiorno solo se ho una frase in locale
-                ApplicationUtils.updateLocalDB(context,phrase_id,phrase,1);
+                ApplicationUtils.updateLocalDB(context,phrase_id,phrase,ApplicationUtils.phraseFromWidget);
 
             } else {
+                //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"isLoadFromLocalDBEnabled false");
+
                 toastMsg=context.getString(R.string.noInternet);
             }
             // Se aggiorno il widget tramite azioni di UPDATE mostro in questo caso un Toast sulla connettività
             if (action.equals(AppWidgetManager.ACTION_APPWIDGET_UPDATE)) {
                 showToastMessage(context, toastMsg);
+            } else{
+                //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"Not ACTION_APPWIDGET_UPDATE: "+action);
             }
         }
 
@@ -209,6 +241,8 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Se scatta l'alarm si disabilita da solo (non è repeated)
         if (!action.equals(ApplicationUtils.alarmWidgetUpdateFilter)){
             disableAlarm(context);
+        } else{
+            //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"Not alarmWidgetUpdateFilter: "+action);
         }
 
         // Reiposto sempre l'allarme anche se non c'è connettività. Evito di registrare un broadcastReceiver
@@ -221,6 +255,9 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
         if (ApplicationUtils.isNotificationEnabled()) {
             showNotification(context);
+        } else {
+            //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"Not isNotificationEnabled: false"+action);
+
         }
     }
 
@@ -235,9 +272,11 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Ritardo l'aggiornamendo dell'UI
         ctx=context;
         if (phrase==null){
-            phrase=ApplicationUtils.loadLatestPhrase(context, ApplicationUtils.SharedWidgetLatestPhraseKey);
+            PhraseData p = ApplicationUtils.loadLatestPhrase(context, ApplicationUtils.phraseFromWidget);
+            phrase=p.phrase;
+            phrase_id=p.phrase_ID;
         } else {
-            ApplicationUtils.saveLatestPhrase(context, ApplicationUtils.SharedWidgetLatestPhraseKey, phrase);
+            ApplicationUtils.saveLatestPhrase(context, ApplicationUtils.phraseFromWidget, phrase_id, phrase);
         }
 
         Runnable runnable = new Runnable() {

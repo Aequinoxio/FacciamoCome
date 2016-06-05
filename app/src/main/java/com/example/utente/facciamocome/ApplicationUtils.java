@@ -1,5 +1,6 @@
 package com.example.utente.facciamocome;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +11,7 @@ import android.hardware.camera2.params.StreamConfigurationMap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.example.utente.facciamocome.databaseLocale.DataAdapter;
 
@@ -17,8 +19,14 @@ import com.example.utente.facciamocome.databaseLocale.DataAdapter;
  * Created by utente on 30/05/2016.
  */
 public class ApplicationUtils {
+
+    private static Context ctx;
+
     public final static String SharedWidgetLatestPhraseKey="widgetLatestPhrase";
+    public final static String SharedWidgetLatestPhraseKeyID="widgetLatestPhraseID";
+
     public final static String SharedActivityLatestPhraseKey="activityLatestPhrase";
+    public final static String SharedActivityLatestPhraseKeyID="activityLatestPhraseID";
 
     public final static String alarmWidgetUpdateFilter= "com.example.utente.facciamocome.AlarmUpdateWidget";
     public final static String settingsWidgetUpdateFilter= "com.example.utente.facciamocome.SettingsUpdateWidget";
@@ -37,15 +45,15 @@ public class ApplicationUtils {
 
     public static DataAdapter mDbHelper=null;
 
-    public final static int phraseFromWidget=0;  // Costanti per indicare da quale parte inserisco le frasi nel DB
-    public final static int phraseFromApp=1;
+    public final static int phraseFromApp=0;     // Costanti per indicare da quale parte inserisco le frasi nel DB (0=false, 1 = true - Limitazione Sqlite3 (bool è modellato come integer)
+    public final static int phraseFromWidget=1;
 
     private static boolean notificationEnabled;
     private static boolean notificationSoundEnabled;
     private static boolean loadFromLocalDBEnabled;
     private static boolean showToastOnConnection;
 
-    private static int     alarmRepeatSecs=10*60; // inizializzo a 10 minuti per sicurezza
+    private static int       alarmRepeatSecs=10*60; // inizializzo a 10 minuti per sicurezza
     private final static int minAlarmRepeatSecs=10*60;
 
     private static ApplicationUtils ourInstance = new ApplicationUtils();
@@ -55,26 +63,78 @@ public class ApplicationUtils {
     }
 
     private ApplicationUtils() {
+        // Imposto il contesto e carico subito le preferenze a causa di un bug rilevato:
+        // Se rimuovo l'app dai task attivi e clicco sul widget, le variabili prelevate dalle shared presf tornano ad essere quelle di default
+        // In altre parole il singleton viene ricreato ma con i valori di default.
+        //Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),"Singleton");
+
+        // Può esserci una condizione di errore del tipo NullPointerException se viene creata una istanza di ApplicationUtils
+        // in MyApplication e quindi prima che venga creato il contesto dell'applicazione.
+        ctx=MyApplication.getContext();
+        loadSharedPreferences(ctx);
     }
 
     // Carico l'ultima
-    //frase mostrata dalle shared preferences e se non la trovo o se è vuota uso l'appname
-    public static String loadLatestPhrase(Context context, String sharedKey){
+    // frase mostrata dalle shared preferences e se non la trovo o se è vuota uso l'appname
+    public static PhraseData loadLatestPhrase(Context context, int source){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
 
-        String s=sharedPreferences.getString(sharedKey,context.getString(R.string.app_name));
+        String phraseKey;
+        String phraseKeyId;
 
-        if (s.trim().equals("")) s=context.getString(R.string.app_name);
+        switch (source){
+            case ApplicationUtils.phraseFromWidget :
+                phraseKey=SharedWidgetLatestPhraseKey;
+                phraseKeyId=SharedWidgetLatestPhraseKeyID;
+                ; break;
+            case ApplicationUtils.phraseFromApp:
+                phraseKey=SharedActivityLatestPhraseKey;
+                phraseKeyId=SharedActivityLatestPhraseKeyID;
+                ; break;
+            default:
+                phraseKey="";
+                phraseKeyId="";
+        }
 
-        return (s);
+        String s1=sharedPreferences.getString(phraseKey,context.getString(R.string.settingsFirstPhrase));
+        String s2=sharedPreferences.getString(phraseKeyId,context.getString(R.string.settingsFirstPhraseID));
+
+        // Per sicurezza se c'è una stringa nulla inizializo al default tutte e due
+        if (s1.trim().equals("")||s2.trim().equals("")) {
+            s1=context.getString(R.string.settingsFirstPhrase);
+            s2=String.valueOf(R.string.settingsFirstPhraseID);
+        }
+
+        PhraseData p = new PhraseData();
+        p.phrase=s1;
+        p.phrase_ID=Integer.valueOf(s2);
+        return (p);
     }
 
     // Salvo nelle shared prefs l'ultima frase mostrata
-    public static void saveLatestPhrase(Context context, String sharedKey, String sharedValue){
+    public static void saveLatestPhrase(Context context, int source, int sharedPhraseID, String sharedPhraseValue){
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.putString(sharedKey, sharedValue);
+        String phraseKey;
+        String phraseKeyId;
+
+        switch (source){
+            case ApplicationUtils.phraseFromWidget :
+                phraseKey=SharedWidgetLatestPhraseKey;
+                phraseKeyId=SharedWidgetLatestPhraseKeyID;
+                ; break;
+            case ApplicationUtils.phraseFromApp:
+                phraseKey=SharedActivityLatestPhraseKey;
+                phraseKeyId=SharedActivityLatestPhraseKeyID;
+                ; break;
+            default:
+                phraseKey="";
+                phraseKeyId="";
+        }
+
+        editor.putString(phraseKey, sharedPhraseValue);
+        editor.putString(phraseKeyId, String.valueOf(sharedPhraseID));
         editor.apply();
     }
 

@@ -34,6 +34,13 @@
             android:summary="@string/settingsShowToastTitleSummary"
             android:key="@string/settingsShowToast"
             android:defaultValue="true" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Crash report">
+        <CheckBoxPreference android:key="acra.disable"
+            android:title="@string/settingsDisableACRA"
+            android:summaryOn="@string/settingsDisableACRASummaryOn"
+            android:summaryOff="@string/settingsDisableACRASummaryOff"
+            android:defaultValue="false"/>
 
     </PreferenceCategory>
 
