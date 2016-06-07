@@ -12,6 +12,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 
 import com.example.utente.facciamocome.databaseLocale.DataAdapter;
 
@@ -53,8 +54,12 @@ public class ApplicationUtils {
     private static boolean loadFromLocalDBEnabled;
     private static boolean showToastOnConnection;
 
+    private static boolean firstRun=false;    // Per mostrare lo ShowcaseView
+
     private static int       alarmRepeatSecs=10*60; // inizializzo a 10 minuti per sicurezza
     private final static int minAlarmRepeatSecs=10*60;
+
+    private static int historyLimit;
 
     private static ApplicationUtils ourInstance = new ApplicationUtils();
 
@@ -72,6 +77,7 @@ public class ApplicationUtils {
         // in MyApplication e quindi prima che venga creato il contesto dell'applicazione.
         ctx=MyApplication.getContext();
         loadSharedPreferences(ctx);
+        historyLimit= ctx.getResources().getInteger(R.integer.sqlHistoryLimit);
     }
 
     // Carico l'ultima
@@ -164,17 +170,21 @@ public class ApplicationUtils {
      */
     public static void updateLocalDB(Context context, int phrase_ID, String phrase, int widgetOrApp){
 
-        int historyLimit=context.getResources().getInteger(R.integer.sqlHistoryLimit);
+        // Se provo ad inserire la frase iniziale esco subito
+        if (phrase_ID==Integer.valueOf(context.getString(R.string.settingsFirstPhraseID))){
+            return;
+        }
 
         mDbHelper=getDatabaseInstance(context);
-
         mDbHelper.open();
 
         String sql = "INSERT INTO history (id, phrase, source_widget, created_at) VALUES("+ String.valueOf(phrase_ID) +", "+
                 DatabaseUtils.sqlEscapeString(phrase)+", "+String.valueOf(widgetOrApp) +", datetime())";
+
         try {
             mDbHelper.setValues(sql);
         } catch (SQLiteConstraintException sqlCE){
+            // Non dovrei mai arrivarci. L'id non è chiave primaria
             sqlCE.printStackTrace();
         }
 
@@ -217,6 +227,8 @@ public class ApplicationUtils {
         loadFromLocalDBEnabled = sharedPreferences.getBoolean(context.getString(R.string.settingsLoadFromLocalDB),true);
         showToastOnConnection = sharedPreferences.getBoolean(context.getString(R.string.settingsShowToast),true);
 
+        firstRun=sharedPreferences.getBoolean(context.getString(R.string.settingsFirstRun),true);
+
         // Per sicurezza imposto il minimo valore a minAlarmRepeatSecs
         alarmRepeatSecs = Math.max(minAlarmRepeatSecs,Integer.valueOf(
                 sharedPreferences.getString(context.getString(R.string.settingsRefreshTime),context.getString(R.string.app_name))
@@ -241,5 +253,24 @@ public class ApplicationUtils {
 
     public static int getAlarmRepeatSecs() {
         return alarmRepeatSecs;
+    }
+
+    public static int getHistoryLimit() {
+        return historyLimit;
+    }
+
+    public static boolean isFirstRun() {
+        return firstRun;
+    }
+
+    public static void setFirstRun(Context context, boolean firstRun) {
+        ApplicationUtils.firstRun = firstRun;
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor ed = sp.edit();
+
+
+        ed.putBoolean(context.getString(R.string.settingsFirstRun), false);
+        ed.apply();
     }
 }

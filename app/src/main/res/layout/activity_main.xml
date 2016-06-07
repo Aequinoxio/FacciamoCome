@@ -10,23 +10,36 @@
     tools:context="com.example.utente.facciamocome.MainActivity"
     android:id="@+id/mainLayout">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:id="@+id/txtPhrase"
-        android:textColor="@color/material_blue_grey_950"
-        android:textStyle="bold|italic"
-        android:textAppearance="@android:style/TextAppearance.Large"
-        android:clickable="true"
-        android:onClick="getPhrase"
-        android:gravity="center_horizontal"
-        android:textSize="32sp"
-        android:layout_alignParentTop="true"
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/scrollView"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_above="@+id/progressBar2"
+        android:layout_alignParentTop="true">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:id="@+id/txtPhrase"
+            android:textColor="@color/material_blue_grey_950"
+            android:textStyle="bold|italic"
+            android:textAppearance="@android:style/TextAppearance.Large"
+            android:clickable="true"
+            android:onClick="getPhrase"
+            android:gravity="center_horizontal"
+            android:textSize="32sp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_above="@+id/progressBar2" />
+    </ScrollView>
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -49,7 +62,8 @@
         android:gravity="center_horizontal"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:textSize="10sp" />
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -70,14 +84,15 @@
 
     <View style="@style/Divider"
         android:id="@+id/view2"
-        android:layout_alignBottom="@+id/progressBar2"
+        android:layout_above="@+id/textView4"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
     <View style="@style/Divider"
-        android:layout_below="@+id/textView4"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/view3" />
+        android:id="@+id/view3"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
     <ProgressBar
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="wrap_content"
@@ -85,7 +100,7 @@
         android:id="@+id/progressBar2"
         android:indeterminate="true"
         android:visibility="invisible"
-        android:layout_below="@+id/txtPhrase"
+        android:layout_above="@+id/view2"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
@@ -97,9 +112,9 @@
         android:id="@+id/listView"
         android:layout_centerHorizontal="true"
         android:clickable="true"
-        android:layout_below="@+id/textView4"
         android:layout_above="@+id/view"
-        android:longClickable="true" />
+        android:longClickable="true"
+        android:layout_below="@+id/view3" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -109,8 +124,10 @@
         android:id="@+id/textView4"
         android:gravity="center_vertical"
         android:textColor="@android:color/black"
-        android:layout_below="@+id/view2"
+        android:layout_above="@+id/view3"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

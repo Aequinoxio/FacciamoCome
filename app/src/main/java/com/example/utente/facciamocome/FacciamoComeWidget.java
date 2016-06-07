@@ -336,8 +336,8 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         // Notifica
         /**************************/
         //API level 11
-        Intent intent = new Intent(); //(context, MainActivity.class);
-        //intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context,ApplicationUtils.notificationID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Notification.Builder builder = new Notification.Builder(context);

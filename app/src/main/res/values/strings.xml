@@ -34,6 +34,8 @@
 
     <string name="sqlSelectLocalPhrase">SELECT id,phrase FROM phrases LIMIT 20</string>
 
+    <string name="sqlUpdateTimestampLocalPhrase">UPDATE history SET created_at = datetime() WHERE id=</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_setting">Setting</string>
@@ -43,9 +45,10 @@
     <string name="action_reload">Altra frase</string>
     <string name="action_share">Condividi</string>
     <string name="action_help">Help</string>
+    <string name="action_showcase">Help primo avvio</string>
 
     <string name="settingsFirstPhrase">Facciamo come...</string>
-    <string name="settingsFirstPhraseID">0</string>
+    <string name="settingsFirstPhraseID">-1</string>
 
     <string name="settingsReceiveNotifications">receiveNotifications</string>
     <string name="settingsReceiveNotificationsTitle">Nuova frase nel widget</string>
@@ -63,7 +66,6 @@
     <string name="settingsLoadFromLocalDBTitle">Frasi dal database locale</string>
     <string name="settingsLoadFromLocalDBSummary">Carico dal db locale se manca la connessione?</string>
 
-
     <string name="settingsRefreshTime">refreshTime</string>
     <string name="settingsRefreshTimeTitle">Ricarico il widget ogni...</string>
     <string name="settingsRefreshTimeSummary">refreshTime</string>
@@ -73,10 +75,25 @@
     <string name="settingsDisableACRASummaryOn">Disabilitato</string>
     <string name="settingsDisableACRASummaryOff">Abilitato</string>
 
-    <string name="txtStorico">Le ultime 20 frasi già mostrate</string>
-    <string name="txtStoricoApp">Le ultime 20 frasi già mostrate nell\'app</string>
-    <string name="txtStoricoWidget">Le ultime 20 frasi già mostrate nel widget</string>
+    <string name="settingsFirstRun">firstRun</string>
+
+    <string name="txtStorico">Storico</string>
+    <string name="txtStoricoPart1">Le ultime</string>
+    <string name="txtStoricoPart2">frasi già mostrate</string>
+    <string name="txtStoricoApp">nell\'app</string>
+    <string name="txtStoricoWidget">nel widget</string>
     <string name="title_activity_help">Un aiuto veloce...</string>
+
+    <string name="scvNext">Prossimo</string>
+    <string name="scvTxtPhrase">Qui vedrai la nuova frase</string>
+    <string name="scvTxtPhraseText">Se clicchi verrà caricata una nuova frase</string>
+
+    <string name="scvHistoryPhrase">Qui vedrai le ultime frasi visualizzate nell\'app e nel widget</string>
+    <string name="scvHistoryPhraseText">Se fai uno swipe a destra o a sinistra passerai da una visualizzazione all\'altra</string>
+
+    <string name="scvClose">Iniziamo</string>
+    <string name="scvCloseText">Ricordati di non prendermi troppo sul serio\nTake it easy</string>
+
 
     <!--<string name="settingsArrayRefreshTime">arrayRefreshTime</string>-->
     <!--<string name="settingsArrayRefreshTimeValues">arrayRefreshTimeValues</string>-->

@@ -40,6 +40,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.utente.facciamocome.databaseLocale.DataAdapter;
+import com.github.amlcurran.showcaseview.ShowcaseView;
+import com.github.amlcurran.showcaseview.targets.Target;
+import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AsyncTaskCompleteListener<Integer, String>,
-        AdapterView.OnItemSelectedListener, AdapterView.OnItemLongClickListener {
+        AdapterView.OnItemSelectedListener, AdapterView.OnItemLongClickListener, View.OnClickListener {
 
     private static String url ;
 
@@ -64,6 +67,14 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
     private String phrase;
     private int phrase_ID;
 
+    // Per ShowcaseView
+    private ShowcaseView showcaseView;
+    private int counter = 0;
+    private TextView scvTextView1;
+    private TextView scvTextView2;
+    private ListView scvListView;
+
+    ///////////////////
     // private ProgressDialog pDialog;
 
     public void onTaskComplete(Integer id, String result){
@@ -172,17 +183,36 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         // Aggiorno lo storico
         updatelistViewDataLabel();
 
+        ///////////// ShowCaseView
+        if (ApplicationUtils.isFirstRun()){
+            showFirstRunHelp();
+        }
     }
-
+// TODO:Usare la ShowcaseView
     private void updatelistViewDataLabel(){
+        String s=String.valueOf(ApplicationUtils.getHistoryLimit());
+        String s1 = getString(R.string.txtStoricoPart1)+" "+s+" "+getString(R.string.txtStoricoPart2)+" ";
+        s1 += (historicalDataFromWidget)?
+                getString(R.string.txtStoricoWidget):
+                getString(R.string.txtStoricoApp);
+
+        int color =
+                (historicalDataFromWidget)?
+                        Color.RED:
+                        Color.BLUE;
+
+        int gravity=
+                (historicalDataFromWidget)?
+                        Gravity.RIGHT :
+                        Gravity.LEFT;
+
         // Whatever
         loadListView();
         // Imposto la visualizzazione dello switch in modo corretto
         TextView textView = (TextView)findViewById(R.id.textView4);
-        textView.setText( historicalDataFromWidget?getString(R.string.txtStoricoWidget):
-                getString(R.string.txtStoricoApp)
-        );
-
+        textView.setText(s1);
+        textView.setTextColor(color);
+        textView.setGravity(gravity);
     }
     @Override
     protected void onResume() {
@@ -294,6 +324,12 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
             return true;
         }
 
+        // Help primo avvio
+        if (id == R.id.action_showcase){
+            showFirstRunHelp();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -329,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         List<String> frasi=mDbHelper.getValues(sql,0);
 
         ListView listView = (ListView) findViewById(R.id.listView);
-        // Creating adapter for spinner
+        // Creating adapter for listview
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_list_item_1, frasi);
 
@@ -363,4 +399,56 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         // TODO Auto-generated method stub
 
     }
+
+    private void showFirstRunHelp(){
+        scvTextView1 = (TextView) findViewById(R.id.txtPhrase);
+  //      scvTextView2 = (TextView) findViewById(R.id.textView4);
+        scvListView  = (ListView) findViewById(R.id.listView);
+
+        showcaseView = new ShowcaseView.Builder(this)
+                .withMaterialShowcase()
+                .setTarget(new ViewTarget(scvTextView1))
+                .setContentTitle(getString(R.string.scvTxtPhrase))     // Frase iniziale
+                .setContentText(getString(R.string.scvTxtPhraseText))
+                .setStyle(R.style.ShowcaseTheme)
+                .setOnClickListener(this)
+                .build();
+        showcaseView.setButtonText(getString(R.string.scvNext));
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (counter) {
+//            case 0:
+//                showcaseView.setShowcase(new ViewTarget(scvTextView2), true);
+//                showcaseView.setContentTitle(getString(R.string.scvHistoryPhrase));
+//                showcaseView.setContentText(getString(R.string.scvHistoryPhraseText));
+//                break;
+
+            case 0:
+                showcaseView.setShowcase(new ViewTarget(scvListView), true);
+                showcaseView.setContentTitle(getString(R.string.scvHistoryPhrase));
+                showcaseView.setContentText(getString(R.string.scvHistoryPhraseText));
+
+                break;
+
+            case 1:
+                showcaseView.setTarget(Target.NONE);
+                showcaseView.setContentTitle(getString(R.string.scvClose));
+                showcaseView.setContentText(getString(R.string.scvCloseText));
+                showcaseView.setButtonText(getString(R.string.scvClose));
+                //setAlpha(0.4f, textView1, textView2, textView3);
+                break;
+
+            case 2:
+                showcaseView.hide();
+                ApplicationUtils.setFirstRun(this, false);
+                counter=-1;  // Visto che lo incremento comunque arriverà allo stato 0 all'uscita del metodo
+                //setAlpha(1.0f, textView1, textView2, textView3);
+                break;
+        }
+        counter++;
+    }
+
 }
