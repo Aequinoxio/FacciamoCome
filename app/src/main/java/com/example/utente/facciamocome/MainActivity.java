@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
             showFirstRunHelp();
         }
     }
-// TODO:Usare la ShowcaseView
+
     private void updatelistViewDataLabel(){
         String s=String.valueOf(ApplicationUtils.getHistoryLimit());
         String s1 = getString(R.string.txtStoricoPart1)+" "+s+" "+getString(R.string.txtStoricoPart2)+" ";

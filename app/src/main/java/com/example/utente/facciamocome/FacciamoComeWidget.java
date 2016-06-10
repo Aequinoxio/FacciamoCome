@@ -342,7 +342,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
         Notification.Builder builder = new Notification.Builder(context);
 
-        builder.setAutoCancel(true);
+        builder.setAutoCancel(false);
         builder.setTicker(phrase);
         builder.setContentTitle(context.getString(R.string.notification_Title));
         builder.setContentText(phrase);
@@ -351,7 +351,7 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
         builder.setSmallIcon(R.drawable.ic_account_balance_white_18dp);
         builder.setContentIntent(pendingIntent);
-        builder.setOngoing(true);
+        builder.setOngoing(false);
         builder.setSubText(context.getString(R.string.notification_SubText));   //API level 16
 
         builder.addAction(R.drawable.ic_account_balance_black_18dp,"Condividi", pendingIntentBtn2);
