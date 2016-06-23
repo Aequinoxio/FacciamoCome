@@ -29,8 +29,8 @@
     <string name="sqlSelectLocalRandomPhrase">SELECT phrase FROM phrases ORDER BY RANDOM() LIMIT 1</string>
     <string name="sqlSelectLocalRandomIdPhrase">SELECT id,phrase FROM phrases ORDER BY RANDOM() LIMIT 1</string>
 
-    <string name="sqlSelectHistoryPhrasesWidget">SELECT phrase FROM history where source_widget=1 ORDER BY created_at desc</string>
-    <string name="sqlSelectHistoryPhrasesApp">SELECT phrase FROM history where source_widget=0 ORDER BY created_at desc</string>
+    <string name="sqlSelectHistoryPhrasesWidget">SELECT phrase,created_at FROM history where source_widget=1 ORDER BY created_at desc</string>
+    <string name="sqlSelectHistoryPhrasesApp">SELECT phrase,created_at FROM history where source_widget=0 ORDER BY created_at desc</string>
 
     <string name="sqlSelectLocalPhrase">SELECT id,phrase FROM phrases LIMIT 20</string>
 

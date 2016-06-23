@@ -8,16 +8,35 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
 
 public class SettingsActivity extends AppCompatActivity {
+
+    static int oldSettingsTimeSecs=0;
+
+    @Override
+    public void onBackPressed() {
+        setSecondsChangedResult();
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        // salvo il vecchio valore
+        oldSettingsTimeSecs=ApplicationUtils.getAlarmRepeatSecs();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar2);
         setSupportActionBar(toolbar);
@@ -37,7 +56,6 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     public void onPause(){
         super.onPause();
-        setResult(ApplicationUtils.SETTINGS_RESULTCODE, new Intent(this, MainActivity.class));
     }
 
 
@@ -78,7 +96,38 @@ public class SettingsActivity extends AppCompatActivity {
             Preference pref = findPreference(key);
             ListPreference mylistpreference= (ListPreference) getPreferenceScreen().findPreference(key);
             pref.setSummary(mylistpreference.getEntry());
+
+//            if (oldSettingsTimeSecs==Integer.valueOf(mylistpreference.getValue().toString())){
+//                ApplicationUtils.setSecsPreferencesChanged(false);
+//            }else {
+//                ApplicationUtils.setSecsPreferencesChanged(true);
+//            }
         }
     }
 
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Up Action
+        if (item.getItemId()==android.R.id.home) {
+            setSecondsChangedResult();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void setSecondsChangedResult(){
+        Intent intent = new Intent(this, MainActivity.class);
+
+        ApplicationUtils.loadSharedPreferences(this);
+        Boolean secsChanged;
+        if (oldSettingsTimeSecs!=ApplicationUtils.getAlarmRepeatSecs()){
+            secsChanged=true;
+        } else{
+            secsChanged=false;
+        }
+        // Ritorno il valore precedente
+        intent.putExtra(ApplicationUtils.oldSettingsTimeSecsKey, secsChanged);
+
+        setResult(ApplicationUtils.SETTINGS_RESULTCODE, intent);
+    }
 }

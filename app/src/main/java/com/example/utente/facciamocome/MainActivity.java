@@ -2,6 +2,7 @@ package com.example.utente.facciamocome;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.appwidget.AppWidgetManager;
@@ -38,6 +39,7 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.WrapperListAdapter;
 
 import com.example.utente.facciamocome.databaseLocale.DataAdapter;
 import com.github.amlcurran.showcaseview.ShowcaseView;
@@ -98,12 +100,24 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        // Se torno dalla setting activity allora aggiorno il widget
-        if (requestCode==ApplicationUtils.SETTINGS_RESULTCODE){
+        Boolean secsChanged;
+//        // Se torno dalla setting activity allora aggiorno il widget
+//        if (requestCode==ApplicationUtils.SETTINGS_RESULTCODE){
+//            ApplicationUtils.setSecsPreferencesChanged(false); // Resetto
+//            Il tasto UP della main activity non chiama on pause -> non è possibile inserire setresult.
+//              Occorrerebbe fare l'overriding della callback del tasto up. PEr ora uso il trucchetto di memorizzarmi se il tempo è cambiato in ApplicationUtils
+        if (data==null){
+            secsChanged=false;
+        } else {
+            secsChanged = data.getBooleanExtra(ApplicationUtils.oldSettingsTimeSecsKey, false);
+        }
+
+        // Aggiorno il widget solo se ho cambiato i secondi
+        if (secsChanged) {
             Intent intent = new Intent(this, FacciamoComeWidget.class);
             intent.setAction(ApplicationUtils.settingsWidgetUpdateFilter);
             int ids[] = AppWidgetManager.getInstance(getApplication()).getAppWidgetIds(new ComponentName(getApplication(), FacciamoComeWidget.class));
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS,ids);
+            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
             sendBroadcast(intent);
         }
 
@@ -364,13 +378,33 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
 
         List<String> frasi=mDbHelper.getValues(sql,0);
 
+        // TODO: modificare mDBhelper per tornare una coppia di valori. Usarli per impostare il tempo senza necessità del cursor
+
+        Cursor cursor=mDbHelper.getCursor(sql);
+        List<FrasiTempo> frasiTempo=new ArrayList<FrasiTempo>();
+        FrasiTempo ft;
+
+// looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                ft=new FrasiTempo();
+                ft.phrase=cursor.getString(0);
+                ft.created_at=cursor.getString(1);
+                frasiTempo.add(ft);
+            } while (cursor.moveToNext());
+        }
+
         ListView listView = (ListView) findViewById(R.id.listView);
         // Creating adapter for listview
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, frasi);
+//       ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+//                android.R.layout.simple_list_item_1, frasi);
+
+        //HistoryAdapter<String> dataAdapter = new HistoryAdapter<String>(this,R.layout.item_next_thing, frasi);
+        HistoryAdapter<FrasiTempo> dataAdapter = new HistoryAdapter<>(this,R.layout.item_next_thing, frasiTempo);
 
         // Drop down layout style - list view with radio button
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
+        //dataAdapter.setDropDownViewResource(android.R.layout.simple_list_item_1);
+
         listView.setAdapter(dataAdapter);
 
         mDbHelper.close();
@@ -387,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         //Log.v("long clicked", "pos: " + position + parent.getItemAtPosition(position).toString());
 
-        String s = parent.getItemAtPosition(position).toString();
+        String s = ((FrasiTempo) parent.getItemAtPosition(position)).phrase;
         scegliShareMethod(view,s);
 
         return false;
@@ -451,4 +485,8 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         counter++;
     }
 
+    public class FrasiTempo{
+        protected String phrase;
+        protected String created_at;
+    }
 }

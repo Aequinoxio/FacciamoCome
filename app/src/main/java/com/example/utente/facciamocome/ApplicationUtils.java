@@ -38,6 +38,17 @@ public class ApplicationUtils {
     public final static int    notificationID = 8901;
 
     public final static int    SETTINGS_RESULTCODE=9876;
+    public final static String oldSettingsTimeSecsKey="com.example.utente.facciamocome.oldSettingsTimeSecsKey";
+
+//    public static Boolean getSecsPreferencesChanged() {
+//        return secsPreferencesChanged;
+//    }
+//
+//    public static void setSecsPreferencesChanged(Boolean secsPreferencesChanged) {
+//        ApplicationUtils.secsPreferencesChanged = secsPreferencesChanged;
+//    }
+//
+//    private static Boolean     secsPreferencesChanged=false;
 
     public static final String TAG_PHRASE= "phrase";
     public static final String TAG_ID = "id";
@@ -179,7 +190,7 @@ public class ApplicationUtils {
         mDbHelper.open();
 
         String sql = "INSERT INTO history (id, phrase, source_widget, created_at) VALUES("+ String.valueOf(phrase_ID) +", "+
-                DatabaseUtils.sqlEscapeString(phrase)+", "+String.valueOf(widgetOrApp) +", datetime())";
+                DatabaseUtils.sqlEscapeString(phrase)+", "+String.valueOf(widgetOrApp) +", datetime('now','localtime'))";
 
         try {
             mDbHelper.setValues(sql);
