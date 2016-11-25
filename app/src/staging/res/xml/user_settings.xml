@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Generali">
+        <CheckBoxPreference
+            android:title="@string/settingsLoadFromLocalDBTitle"
+            android:summary="@string/settingsLoadFromLocalDBSummary"
+            android:key="@string/settingsLoadFromLocalDB"
+            android:defaultValue="true" />
+
+        <ListPreference
+            android:title="@string/settingsRefreshTimeTitle"
+            android:key="@string/settingsRefreshTime"
+            android:summary="@string/settingsRefreshTimeSummary"
+            android:entries="@array/refreshTime"
+            android:entryValues="@array/refreshTimeValues"
+            android:defaultValue="1200" />
+        <ListPreference
+            android:title="@string/settingsCountryTitle"
+            android:key="@string/settingsCountryTarget"
+            android:summary="@string/settingsCountrySummary"
+            android:entries="@array/countryNames"
+            android:entryValues="@array/countryValues"
+            android:defaultValue="0" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Notifiche widget">
+        <CheckBoxPreference
+            android:title="@string/settingsReceiveNotificationsTitle"
+            android:summary="@string/settingsReceiveNotificationsSummary"
+            android:key="@string/settingsReceiveNotifications"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:title="@string/settingsReceiveNotificationsSoundTitle"
+            android:summary="@string/settingsReceiveNotificationsSoundTitleSummary"
+            android:key="@string/settingsReceiveNotificationsSound"
+            android:defaultValue="false"
+            android:dependency="receiveNotifications"/>
+
+        <CheckBoxPreference
+            android:title="@string/settingsShowToastTitle"
+            android:summary="@string/settingsShowToastTitleSummary"
+            android:key="@string/settingsShowToast"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Crash report">
+        <CheckBoxPreference android:key="acra.disable"
+            android:title="@string/settingsDisableACRA"
+            android:summaryOn="@string/settingsDisableACRASummaryOn"
+            android:summaryOff="@string/settingsDisableACRASummaryOff"
+            android:defaultValue="false"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

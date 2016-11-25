@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">Facciamo come...</string>
     <string name="serverURL">http://www.facciamocome.org/generate</string>
-    <string name="serverURLCountry">http://facciamocome.org/generate?country=</string>
     <string name="serverSite">http://www.facciamocome.org</string>
     <string name="action_about">Informazioni</string>
     <string name="Autore">Gabriele Galluzzo</string>
@@ -72,6 +71,11 @@
     <string name="settingsRefreshTime">refreshTime</string>
     <string name="settingsRefreshTimeTitle">Ricarico il widget ogni...</string>
     <string name="settingsRefreshTimeSummary">refreshTime</string>
+
+    <string name="settingsCountryTarget">countryTarget</string>
+    <string name="settingsCountryTitle">Mi concentro su...</string>
+    <string name="settingsCountrySummary">County</string>
+
 
     <string name="settingsDisableACRA">Disabilita CrashReport</string>
     <string name="settingsDisableACRATitle">Disabilito il report in caso di crash?</string>
