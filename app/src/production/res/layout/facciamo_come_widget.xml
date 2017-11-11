@@ -1,4 +1,6 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/widget_margin"
@@ -15,7 +17,7 @@
         android:gravity="center_horizontal">
 
         <ProgressBar
-            style="?android:attr/progressBarStyleSmall"
+            style="@android:style/Widget.Material.Light.ProgressBar.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/progressBar"
@@ -40,7 +42,8 @@
             android:background="@android:color/transparent"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
-            android:gravity="center_horizontal" />
+            android:gravity="center_horizontal"
+            android:visibility="invisible"/>
 
     </RelativeLayout>
 
@@ -71,10 +74,9 @@
 
     <ImageButton
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
+        android:layout_height="match_parent"
         android:id="@+id/buttonWdgShare"
         android:src="@android:drawable/ic_menu_share"
-        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:background="@android:color/transparent" />
@@ -90,5 +92,16 @@
         android:layout_toStartOf="@+id/buttonWdgShare"
         android:layout_marginTop="10dp"
         android:layout_marginBottom="10dp" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_view"
+        android:id="@+id/buttonWdgMain"
+        android:background="@android:color/transparent"
+        android:visibility="visible"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>

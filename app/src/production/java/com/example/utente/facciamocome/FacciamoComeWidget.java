@@ -9,22 +9,16 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.media.RingtoneManager;
 import android.os.Handler;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.utente.facciamocome.databaseLocale.DataAdapter;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Implementation of App Widget functionality.
@@ -55,9 +49,16 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
     public void onTaskComplete(Integer id, String result){
         // Aggiorna la label del widget
         // Log.e("Widget",result);
+        if (id==null||result==null){
+            // TODO: Frase di default in caso il server non risponda. Se previsto dai settings mostrare una frase dal DB locale
+            // ed eventualmente cambiare il colore del widget o dell'activity. Per ora inserisco un default
+            id= Integer.valueOf (ctx.getString(R.string.settingsFirstPhraseID));
+            phrase=ctx.getString(R.string.settingsFirstPhrase);
+        } else {
+            phrase=result;
+            phrase_id=id;
+        }
 
-        phrase=result;
-        phrase_id=id;
        // Log.e(Thread.currentThread().getStackTrace()[2].getMethodName(),phrase);
 
         showProgressBar = false;
@@ -87,17 +88,28 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
         views.setOnClickPendingIntent(R.id.txtPhraseWidget,pendingSync);
         views.setOnClickPendingIntent(R.id.relativeLayout,pendingSync);
 
+
         // Creo un intent specifico per lanciare la ShareActivity (l'ho resa non visibile nel manifest) al click sul pulsante nel widget
         Intent intentBtn = new Intent(context, ShareActivity.class);
         // intentBtn.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intentBtn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
         intentBtn.putExtra(context.getString(R.string.IntentExtraPhrase),phrase); // Passo la frase alla nuova attività
         //intentBtn.putExtra(context.getString(R.string.IntentExtraLink),context.getString(R.string.serverURL)); // Passo la frase alla nuova attività
-
         PendingIntent pendingIntentBtn = PendingIntent.getActivity(context, shareActivityRequestCodeWidget, intentBtn, PendingIntent.FLAG_UPDATE_CURRENT);
         // Get the layout for the App Widget and attach an on-click listener to the button
         views.setOnClickPendingIntent(R.id.buttonWdgShare, pendingIntentBtn);
+
+
+        // Creo un intent specifico per lanciare la MainActivity al click sul pulsante nel widget
+        Intent intentBtnMain = new Intent(context, MainActivity.class);
+        // intentBtn.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intentBtn.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP|Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        //intentBtn.putExtra(context.getString(R.string.IntentExtraPhrase),phrase); // Passo la frase alla nuova attività
+        //intentBtn.putExtra(context.getString(R.string.IntentExtraLink),context.getString(R.string.serverURL)); // Passo la frase alla nuova attività
+        PendingIntent pendingIntentBtnMain = PendingIntent.getActivity(context, shareActivityRequestCodeWidget, intentBtnMain, PendingIntent.FLAG_UPDATE_CURRENT);
+        // Get the layout for the App Widget and attach an on-click listener to the button
+        views.setOnClickPendingIntent(R.id.buttonWdgMain, pendingIntentBtnMain);
+
 
         // Mostro o nascondo la progressbar
         if (showProgressBar){
@@ -354,10 +366,11 @@ public class FacciamoComeWidget extends AppWidgetProvider implements AsyncTaskCo
 
         builder.setSmallIcon(R.drawable.ic_account_balance_white_18dp);
         builder.setContentIntent(pendingIntent);
-        builder.setOngoing(false);
+        builder.setOngoing(true);
         builder.setSubText(context.getString(R.string.notification_SubText));   //API level 16
 
-        builder.addAction(R.drawable.ic_account_balance_black_18dp,"Condividi", pendingIntentBtn2);
+        //@android:drawable/ic_menu_share
+        builder.addAction(android.R.drawable.ic_menu_share,"Condividi", pendingIntentBtn2);
 
         if (ApplicationUtils.isNotificationSoundEnabled()) {
             builder.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));

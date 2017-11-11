@@ -1,7 +1,6 @@
 package com.example.utente.facciamocome;
 
 import android.content.Context;
-import android.view.MotionEvent;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;

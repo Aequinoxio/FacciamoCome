@@ -1,58 +1,33 @@
 package com.example.utente.facciamocome;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
-import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteConstraintException;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
-import android.support.annotation.IntegerRes;
-import android.support.annotation.StringDef;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SimpleAdapter;
-import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.WrapperListAdapter;
 
 import com.example.utente.facciamocome.databaseLocale.DataAdapter;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
 import com.github.amlcurran.showcaseview.targets.ViewTarget;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements AsyncTaskCompleteListener<Integer, String>,
@@ -81,10 +56,17 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
 
     public void onTaskComplete(Integer id, String result){
         // Aggiorna la label del widget
-        phrase=result;
-        phrase_ID=id;
+        if (id==null||result==null){
+            // TODO: Frase di default in caso il server non risponda. Se previsto dai settings mostrare una frase dal DB locale
+            // ed eventualmente cambiare il colore del widget o dell'activity. Per ora inserisco un default
+            id= Integer.valueOf (getString(R.string.settingsFirstPhraseID));
+            phrase=getString(R.string.settingsFirstPhrase);
+        } else {
+            phrase = result;
+            phrase_ID = id;
+        }
         TextView textView = (TextView) findViewById(R.id.txtPhrase);
-        textView.setText(result);
+        textView.setText(phrase);
         ApplicationUtils.saveLatestPhrase(this.getApplicationContext(), ApplicationUtils.phraseFromApp, phrase_ID, phrase);
 
         // Non aggiorno il db qui per non caricare subito la frase appena scaricata nell'history
@@ -385,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
         // TODO: modificare mDBhelper per tornare una coppia di valori. Usarli per impostare il tempo senza necessità del cursor
 
         Cursor cursor=mDbHelper.getCursor(sql);
-        List<FrasiTempo> frasiTempo=new ArrayList<FrasiTempo>();
+        List<FrasiTempo> frasiTempo= new ArrayList<>();
         FrasiTempo ft;
 
 // looping through all rows and adding to list
@@ -487,10 +469,5 @@ public class MainActivity extends AppCompatActivity implements AsyncTaskComplete
                 break;
         }
         counter++;
-    }
-
-    public class FrasiTempo{
-        protected String phrase;
-        protected String created_at;
     }
 }

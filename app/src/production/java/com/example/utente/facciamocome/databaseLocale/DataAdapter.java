@@ -3,15 +3,16 @@ package com.example.utente.facciamocome.databaseLocale;
 /**
  * Created by utente on 02/06/2016.
  */
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DataAdapter
 {
@@ -86,7 +87,7 @@ public class DataAdapter
      * returns list of labels
      * */
     public List<String> getValues(String selectQuery, int index){
-        List<String> labels = new ArrayList<String>();
+        List<String> labels = new ArrayList<>();
 
         //SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = mDb.rawQuery(selectQuery, null);

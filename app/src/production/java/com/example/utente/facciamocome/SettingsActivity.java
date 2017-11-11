@@ -6,14 +6,9 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.KeyEvent;
 import android.view.MenuItem;
-import android.view.View;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -67,7 +62,9 @@ public class SettingsActivity extends AppCompatActivity {
 
             addPreferencesFromResource(R.xml.user_settings);
 
+            // TODO: Non mi sembra un metodo buono, trovarne un altro migliore per impostare il summary corretto nelle liste
             setListSummary("refreshTime");
+            setListSummary("countryTarget");
         }
 
         @Override
@@ -87,7 +84,8 @@ public class SettingsActivity extends AppCompatActivity {
         }
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            if (key.equals("refreshTime")) {
+            // TODO: Non mi sembra un metodo buono, trovarne un altro migliore per impostare il summary corretto nelle liste
+            if (key.equals("refreshTime")|| key.equals("countryTarget")) {
                 setListSummary(key);
             }
         }
@@ -120,11 +118,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         ApplicationUtils.loadSharedPreferences(this);
         Boolean secsChanged;
-        if (oldSettingsTimeSecs!=ApplicationUtils.getAlarmRepeatSecs()){
-            secsChanged=true;
-        } else{
-            secsChanged=false;
-        }
+        secsChanged = oldSettingsTimeSecs != ApplicationUtils.getAlarmRepeatSecs();
         // Ritorno il valore precedente
         intent.putExtra(ApplicationUtils.oldSettingsTimeSecsKey, secsChanged);
 

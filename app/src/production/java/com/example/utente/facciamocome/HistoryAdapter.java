@@ -12,10 +12,10 @@ import java.util.List;
 /**
  * Created by utente on 14/06/2016.
  */
-public class HistoryAdapter<FrasiTempo> extends ArrayAdapter {
+public class HistoryAdapter<FrasiTempoGeneric> extends ArrayAdapter {
     // ArrayAdapter(Context context, int resource, int textViewResourceId, T[] objects)
-    List<MainActivity.FrasiTempo> obj;
-    public HistoryAdapter(Context context, int textViewResourceId, List<MainActivity.FrasiTempo> objects) {
+    List<FrasiTempoGeneric> obj;
+    public HistoryAdapter(Context context, int textViewResourceId, List<FrasiTempoGeneric> objects) {
         super(context, textViewResourceId, objects);
         obj=objects;
     }
@@ -30,9 +30,12 @@ public class HistoryAdapter<FrasiTempo> extends ArrayAdapter {
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_next_thing, parent, false);
         }
+        FrasiTempo objTmp;
+        objTmp= (FrasiTempo) obj.get(position);
+
      //   DemoOption currentOption = DemoOption.values()[position];
-        ((TextView) convertView.findViewById(R.id.txtPhraseListItem)).setText(obj.get(position).phrase);
-        ((TextView) convertView.findViewById(R.id.txtTimeListItem)).setText(obj.get(position).created_at);
+        ((TextView) convertView.findViewById(R.id.txtPhraseListItem)).setText(objTmp.phrase);
+        ((TextView) convertView.findViewById(R.id.txtTimeListItem)).setText(objTmp.created_at);
         ((TextView) convertView.findViewById(R.id.txtPosition)).setText(String.valueOf(position+1));
         return convertView;
     }

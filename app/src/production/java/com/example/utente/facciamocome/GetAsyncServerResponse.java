@@ -3,8 +3,6 @@ package com.example.utente.facciamocome;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.acra.ACRA;
@@ -41,7 +39,11 @@ public class GetAsyncServerResponse extends AsyncTask<Void, Void, Void> {
     public GetAsyncServerResponse(Context context, AsyncTaskCompleteListener<Integer, String> cb) {
         this.context = context;
         this.callback = cb;
-        url = context.getString(R.string.serverURL);
+
+        // Piccolo trick, se il sito non capisce un parametro torna una frase a caso. Per cui se passo 0 con un asola url ho
+        // entrambi i casi trattati (Tutte le nazioni o solo una nazione)
+        //url = context.getString(R.string.serverURL);
+        url = context.getString(R.string.serverURLCountry)+ApplicationUtils.getCountryTarget();
     }
 
     @Override
@@ -101,12 +103,16 @@ public class GetAsyncServerResponse extends AsyncTask<Void, Void, Void> {
             ACRA.getErrorReporter().putCustomData("AsyncTask:json id", (id==null)?"NULL":id);
             ACRA.getErrorReporter().putCustomData("AsyncTask:json phrase", (phrase==null)?"NULL":phrase);
 
-            // Se il valore ritornato dal server è null allora ne imposto uno di default
-            id=context.getString(R.string.settingsFirstPhraseID);
-            phrase=context.getString(R.string.settingsFirstPhrase);
-            color="BLACK";
-            country_id="0";
+//            // Se il valore ritornato dal server è null allora ne imposto uno di default
+//            // TODO: impostare una frase dal DB locale se previsto e informare con un toast l'utente dei problemi sul DB remoto
+//            id=context.getString(R.string.settingsFirstPhraseID);
+//            phrase=context.getString(R.string.settingsFirstPhrase);
+//            color="BLACK";
+//            country_id="0";
+
+            callback.onTaskComplete(null, null);
+        } else {
+            callback.onTaskComplete(Integer.valueOf(id), phrase);
         }
-        callback.onTaskComplete(Integer.valueOf(id), phrase);
     }
 }

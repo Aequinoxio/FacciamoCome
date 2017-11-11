@@ -1,18 +1,13 @@
 package com.example.utente.facciamocome;
 
-import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteConstraintException;
-import android.hardware.camera2.params.StreamConfigurationMap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.util.StringBuilderPrinter;
 
 import com.example.utente.facciamocome.databaseLocale.DataAdapter;
 
@@ -64,6 +59,8 @@ public class ApplicationUtils {
     private static boolean notificationSoundEnabled;
     private static boolean loadFromLocalDBEnabled;
     private static boolean showToastOnConnection;
+
+    private static int     countryTarget;
 
     private static boolean firstRun=false;    // Per mostrare lo ShowcaseView
 
@@ -244,6 +241,8 @@ public class ApplicationUtils {
         alarmRepeatSecs = Math.max(minAlarmRepeatSecs,Integer.valueOf(
                 sharedPreferences.getString(context.getString(R.string.settingsRefreshTime),context.getString(R.string.app_name))
         ));
+
+        countryTarget=Integer.valueOf(sharedPreferences.getString(context.getString(R.string.settingsCountryTarget),"0"));
     }
 
     public static boolean isNotificationEnabled() {
@@ -273,6 +272,11 @@ public class ApplicationUtils {
     public static boolean isFirstRun() {
         return firstRun;
     }
+
+    public static int getCountryTarget() {
+        return countryTarget;
+    }
+
 
     public static void setFirstRun(Context context, boolean firstRun) {
         ApplicationUtils.firstRun = firstRun;

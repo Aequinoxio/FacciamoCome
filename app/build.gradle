@@ -1,14 +1,24 @@
 apply plugin: 'com.android.application'
 
 android {
+    flavorDimensions "default"
+    signingConfigs {
+        config {
+            keyAlias 'myandroidapps'
+            keyPassword '4eszaq1'
+            storeFile file('C:/Users/utente/.android/my_android_keystore.jks')
+            storePassword '1qazse4'
+        }
+    }
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.example.utente.facciamocome"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 1
-        versionName '2.4.5'
+        versionName '2.4.7'
+        signingConfig signingConfigs.config
     }
     buildTypes {
         release {
@@ -17,6 +27,10 @@ android {
             proguardFile 'C:/Users/utente/AppData/Local/Android/sdk/tools/proguard/proguard-android-optimize.txt'
             zipAlignEnabled true
             debuggable false
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
     productFlavors {
@@ -25,17 +39,18 @@ android {
             applicationId 'com.example.utente.facciamocome.staging'
             targetSdkVersion 23
             versionCode 1
-            versionName '2.4.6-staging'
+            versionName '2.4.7-staging'
+            signingConfig signingConfigs.config
         }
         production {
             minSdkVersion 16
-            applicationId 'com.example.utente.facciamocome.production'
+            applicationId 'com.example.utente.facciamocome'
             targetSdkVersion 23
             versionCode 1
-            versionName '2.4.5'
+            versionName '2.4.7'
+            signingConfig signingConfigs.config
         }
     }
-
     android.applicationVariants.all { variant ->
         def appName
         //Check if an applicationName property is supplied; if not use the name of the parent project.
@@ -45,18 +60,24 @@ android {
             appName = parent.name
         }
 
-        variant.outputs.each { output ->
-            def newApkName
-            //If there's no ZipAlign task it means that our artifact will be unaligned and we need to mark it as such.
-            if (output.zipAlign) {
-                newApkName = "${appName}-${output.baseName}-${variant.versionName}.apk"
-            } else {
-                newApkName = "${appName}-${output.baseName}-${variant.versionName}-unaligned.apk"
-            }
-            output.outputFile = new File(output.outputFile.parent, newApkName)
+//        variant.outputs.each { output ->
+//            def newApkName
+//            //If there's no ZipAlign task it means that our artifact will be unaligned and we need to mark it as such.
+//            if (output.zipAlign) {
+//                newApkName = "${appName}-${output.baseName}-${variant.versionName}.apk"
+//            } else {
+//                newApkName = "${appName}-${output.baseName}-${variant.versionName}-unaligned.apk"
+//            }
+//            //output.outputFile = new File(output.outputFile.parent, newApkName)
+//            outputFileName = "${variant.name}-${variant.versionName}.apk"
+//
+//        }
+
+        // Gradle Android Studio 3.0
+        variant.outputs.all { output ->
+            outputFileName = "${appName}-${output.baseName}-${variant.versionName}.apk"
         }
     }
-
 }
 
 dependencies {
